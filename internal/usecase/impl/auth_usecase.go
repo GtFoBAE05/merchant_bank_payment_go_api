@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -53,7 +54,15 @@ func (c *AuthUseCase) Login(request model.LoginRequest) (model.LoginResponse, er
 func (c *AuthUseCase) Logout(accessToken string) error {
 	c.Log.Infof("Attempting logout for accessToken: %s", accessToken)
 
-	err := c.AuthRepository.AddToBlacklist(accessToken)
+	blacklisted, err := c.IsTokenBlacklisted(accessToken)
+	if err != nil {
+		return err
+	}
+	if blacklisted == true {
+		return errors.New("token already blacklisted")
+	}
+
+	err = c.AuthRepository.AddToBlacklist(accessToken)
 	if err != nil {
 		c.Log.Errorf("Failed to blacklist token %s: %v", accessToken, err)
 		return err

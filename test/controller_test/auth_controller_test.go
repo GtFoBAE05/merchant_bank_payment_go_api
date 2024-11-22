@@ -189,6 +189,7 @@ func TestLogout_ShouldReturnSuccess_WhenTokenIsValid(t *testing.T) {
 
 	authController := controller.NewAuthController(log, mockAuthUseCase)
 	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, nil)
+	mockAuthUseCase.On("AddToBlaclist", token).Return(nil)
 
 	r := gin.Default()
 	r.Use(middleware.AuthMiddleware(mockAuthUseCase))
