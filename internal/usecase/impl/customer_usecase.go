@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/repository"
@@ -19,9 +20,28 @@ func NewCustomerUseCase(log *logrus.Logger, customerRepository repository.Custom
 }
 
 func (c *CustomerUseCase) FindById(id string) (entity.Customer, error) {
-	return entity.Customer{}, nil
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		c.Log.Errorf("Failed to parse uuid: %s", id)
+		return entity.Customer{}, err
+	}
+	customer, err := c.CustomerRepository.FindById(parsedUUID)
+	if err != nil {
+		c.Log.Errorf("Failed to find customer with id %s: %v", id, err)
+		return entity.Customer{}, err
+	}
+
+	return customer, nil
 }
 
 func (c *CustomerUseCase) FindByUsername(username string) (entity.Customer, error) {
-	return entity.Customer{}, nil
+	c.Log.Debugf("Finding customer by username: %s", username)
+	customer, err := c.CustomerRepository.FindByUsername(username)
+	if err != nil {
+		c.Log.Errorf("Failed to find customer with username %s: %v", username, err)
+		return entity.Customer{}, err
+	}
+
+	c.Log.Infof("Successfully found customer with username: %s", username)
+	return customer, nil
 }
