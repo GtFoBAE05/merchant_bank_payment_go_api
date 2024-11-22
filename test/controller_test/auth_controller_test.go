@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +16,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 )
 
 type MockAuthUseCase struct {
@@ -36,23 +34,12 @@ func (m *MockAuthUseCase) IsTokenBlacklisted(accessToken string) (bool, error) {
 
 func (m *MockAuthUseCase) AddToBlacklist(accessToken string) error {
 	args := m.Called(accessToken)
-	return args.Get(0).(error)
+	return args.Error(0)
 }
 
 func (m *MockAuthUseCase) Logout(token string) error {
 	args := m.Called(token)
-	return args.Get(0).(error)
-}
-
-func generateValidToken() string {
-	signingKey := []byte("secret")
-	claims := jwt.MapClaims{
-		"sub": "test_user", // Custom claim
-		"exp": time.Now().Add(time.Hour * 1).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := token.SignedString(signingKey)
-	return tokenString
+	return args.Error(0)
 }
 
 func TestLogin_ShouldReturnAccessToken(t *testing.T) {
@@ -189,7 +176,8 @@ func TestLogout_ShouldReturnSuccess_WhenTokenIsValid(t *testing.T) {
 
 	authController := controller.NewAuthController(log, mockAuthUseCase)
 	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, nil)
-	mockAuthUseCase.On("AddToBlaclist", token).Return(nil)
+	mockAuthUseCase.On("AddToBlacklist", token).Return(nil)
+	mockAuthUseCase.On("Logout", token).Return(nil)
 
 	r := gin.Default()
 	r.Use(middleware.AuthMiddleware(mockAuthUseCase))

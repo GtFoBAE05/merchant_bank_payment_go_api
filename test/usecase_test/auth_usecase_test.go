@@ -135,6 +135,7 @@ func TestLogout_ShouldBlacklistToken(t *testing.T) {
 	log := logrus.New()
 
 	mockAuthRepository := new(MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", "valid_token").Return(false, nil)
 	mockAuthRepository.On("AddToBlacklist", "valid_token").Return(nil)
 
 	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
@@ -147,6 +148,7 @@ func TestLogout_ShouldBlacklistToken(t *testing.T) {
 func TestLogout_ShouldReturnError_WhenAddToBlacklistFails(t *testing.T) {
 	log := logrus.New()
 	mockAuthRepository := new(MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", "invalid_token").Return(false, nil)
 	mockAuthRepository.On("AddToBlacklist", "invalid_token").Return(fmt.Errorf("repository error"))
 
 	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
