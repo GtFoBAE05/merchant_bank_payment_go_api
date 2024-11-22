@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -51,6 +52,21 @@ func TestFindById_ShouldReturnCustomer(t *testing.T) {
 	assert.Equal(t, expectedCustomer, customer)
 }
 
+func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	log := logrus.New()
+	useCase := impl.NewCustomerUseCase(log, mockRepo)
+
+	customerId := "abcdef"
+
+	mockRepo.On("FindById", customerId).Return(entity.Customer{}, errors.New("customer not found"))
+
+	customer, err := useCase.FindById(customerId)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, entity.Customer{}, customer)
+}
+
 func TestFindById_ShouldReturnError(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
@@ -58,11 +74,11 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 
 	customerId := uuid.New()
 
-	mockRepo.On("FindById", customerId).Return(entity.Customer{}, nil)
+	mockRepo.On("FindById", customerId).Return(entity.Customer{}, errors.New("customer not found"))
 
 	customer, err := useCase.FindById(customerId.String())
 
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Equal(t, entity.Customer{}, customer)
 }
 
@@ -94,10 +110,10 @@ func TestFindByUsername_ShouldReturnError(t *testing.T) {
 
 	username := "budi"
 
-	mockRepo.On("FindByUsername", username).Return(entity.Customer{}, nil)
+	mockRepo.On("FindByUsername", username).Return(entity.Customer{}, errors.New("customer not found"))
 
 	customer, err := useCase.FindByUsername(username)
 
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Equal(t, entity.Customer{}, customer)
 }
