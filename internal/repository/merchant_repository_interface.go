@@ -6,6 +6,6 @@ import (
 )
 
 type MerchantRepository interface {
-	LoadMerchant() ([]entity.Merchant, error)
+	LoadMerchants() ([]entity.Merchant, error)
 	FindById(id uuid.UUID) (entity.Merchant, error)
 }

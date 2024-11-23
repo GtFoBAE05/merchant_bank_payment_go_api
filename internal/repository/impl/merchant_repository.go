@@ -21,7 +21,7 @@ func NewMerchantRepository(log *logrus.Logger, filename string) *MerchantReposit
 	}
 }
 
-func (m *MerchantRepositoryImpl) LoadMerchant() ([]entity.Merchant, error) {
+func (m *MerchantRepositoryImpl) LoadMerchants() ([]entity.Merchant, error) {
 	m.Log.Debugf("Loading merchants from file: %s", m.Filename)
 
 	file, err := utils.ReadJsonFile(m.Filename, m.Log)
@@ -43,7 +43,7 @@ func (m *MerchantRepositoryImpl) LoadMerchant() ([]entity.Merchant, error) {
 
 func (m *MerchantRepositoryImpl) FindById(id uuid.UUID) (entity.Merchant, error) {
 	m.Log.Debugf("Finding merchant by id: %s", id.String())
-	merchants, err := m.LoadMerchant()
+	merchants, err := m.LoadMerchants()
 	if err != nil {
 		m.Log.Errorf("Error loading merchants from file %s: %v", m.Filename, err)
 		return entity.Merchant{}, err
