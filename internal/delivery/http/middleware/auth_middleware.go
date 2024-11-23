@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func AuthMiddleware(authUseCase usecase.AuthUseCaseInterface) gin.HandlerFunc {
+func AuthMiddleware(authUseCase usecase.AuthUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logrus.Infof("Starting Authorization header validation for %s", c.Request.URL.Path)
 

@@ -17,8 +17,8 @@ func Bootstrap(config *BootstrapConfig) *gin.Engine {
 	customerRepository := repositoryImpl.NewCustomerRepository(config.Log, "internal/repository/data/Customer.json")
 	authRepository := repositoryImpl.NewAuthRepository(config.Log, "internal/repository/data/BlacklistToken.json")
 
-	customerUseCase := usecaseImpl.NewCustomerUseCase(config.Log, customerRepository)
-	authUseCase := usecaseImpl.NewAuthUseCase(config.Log, authRepository, customerUseCase)
+	customerUseCase := usecaseImpl.NewCustomerUseCaseImpl(config.Log, customerRepository)
+	authUseCase := usecaseImpl.NewAuthUseCaseImpl(config.Log, authRepository, customerUseCase)
 
 	authController := controller.NewAuthController(config.Log, authUseCase)
 
