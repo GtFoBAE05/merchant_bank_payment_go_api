@@ -63,10 +63,7 @@ func TestLoadMerchant_ShouldReturnMerchantList(t *testing.T) {
 	}}
 
 	log := logrus.New()
-	repo := impl.MerchantRepositoryImpl{
-		Filename: merchantFilename,
-		Log:      log,
-	}
+	repo := impl.NewMerchantRepository(log, merchantFilename)
 
 	merchantResult, err := repo.LoadMerchant()
 
@@ -82,10 +79,7 @@ func TestLoadMerchant_ShouldReturnError(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
-	repo := impl.MerchantRepositoryImpl{
-		Filename: invalidFilename,
-		Log:      log,
-	}
+	repo := impl.NewMerchantRepository(log, invalidFilename)
 
 	merchantResult, err := repo.LoadMerchant()
 
@@ -110,10 +104,7 @@ func TestFindById_ShouldReturnMerchant(t *testing.T) {
 	}
 
 	log := logrus.New()
-	repo := impl.MerchantRepositoryImpl{
-		Filename: merchantFilename,
-		Log:      log,
-	}
+	repo := impl.NewMerchantRepository(log, merchantFilename)
 
 	merchantResult, err := repo.FindById(parsedUUID)
 	assert.Nil(t, err)
@@ -128,12 +119,8 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 	CreateMerchantTempFile()
 
 	merchantUuid := uuid.New()
-
 	log := logrus.New()
-	repo := impl.MerchantRepositoryImpl{
-		Filename: merchantFilename,
-		Log:      log,
-	}
+	repo := impl.NewMerchantRepository(log, merchantFilename)
 
 	loadedMerchant, err := repo.FindById(merchantUuid)
 	assert.NotNil(t, err)
