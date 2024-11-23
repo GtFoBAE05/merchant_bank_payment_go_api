@@ -68,7 +68,7 @@ func TestLogin_ShouldReturnLoginResponse(t *testing.T) {
 
 	mockAuthRepository := new(MockAuthRepository)
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, mockCustomerUseCase)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, mockCustomerUseCase)
 
 	request := model.LoginRequest{
 		Username: "budi",
@@ -88,7 +88,7 @@ func TestLogin_ShouldReturnInvalidUsername(t *testing.T) {
 	mockCustomerUseCase.On("FindByUsername", "susi").Return(entity.Customer{}, errors.New("customer not found"))
 
 	mockAuthRepository := new(MockAuthRepository)
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, mockCustomerUseCase)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, mockCustomerUseCase)
 
 	request := model.LoginRequest{
 		Username: "susi",
@@ -118,7 +118,7 @@ func TestLogin_ShouldReturnInvalidPassword(t *testing.T) {
 
 	mockAuthRepository := new(MockAuthRepository)
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, mockCustomerUseCase)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, mockCustomerUseCase)
 
 	request := model.LoginRequest{
 		Username: "budi",
@@ -138,7 +138,7 @@ func TestLogout_ShouldBlacklistToken(t *testing.T) {
 	mockAuthRepository.On("IsTokenBlacklisted", "valid_token").Return(false, nil)
 	mockAuthRepository.On("AddToBlacklist", "valid_token").Return(nil)
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	err := authUseCase.Logout("valid_token")
 
@@ -151,7 +151,7 @@ func TestLogout_ShouldReturnError_WhenAddToBlacklistFails(t *testing.T) {
 	mockAuthRepository.On("IsTokenBlacklisted", "invalid_token").Return(false, nil)
 	mockAuthRepository.On("AddToBlacklist", "invalid_token").Return(fmt.Errorf("repository error"))
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	err := authUseCase.Logout("invalid_token")
 
@@ -163,7 +163,7 @@ func TestIsTokenBlacklisted_ShouldReturnTrue(t *testing.T) {
 	mockAuthRepository := new(MockAuthRepository)
 	mockAuthRepository.On("IsTokenBlacklisted", "blacklisted_token").Return(true, nil)
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	isBlacklisted, err := authUseCase.IsTokenBlacklisted("blacklisted_token")
 
@@ -176,7 +176,7 @@ func TestIsTokenBlacklisted_ShouldReturnError_WhenRepositoryFails(t *testing.T) 
 	mockAuthRepository := new(MockAuthRepository)
 	mockAuthRepository.On("IsTokenBlacklisted", "token_error").Return(false, fmt.Errorf("repository error"))
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	isBlacklisted, err := authUseCase.IsTokenBlacklisted("token_error")
 
@@ -190,7 +190,7 @@ func TestAddToBlacklist_ShouldCallRepository(t *testing.T) {
 	mockAuthRepository := new(MockAuthRepository)
 	mockAuthRepository.On("AddToBlacklist", "new_token").Return(nil)
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	err := authUseCase.AddToBlacklist("new_token")
 
@@ -204,7 +204,7 @@ func TestAddToBlacklist_ShouldReturnError_WhenAddFails(t *testing.T) {
 	mockAuthRepository := new(MockAuthRepository)
 	mockAuthRepository.On("AddToBlacklist", "token_error").Return(fmt.Errorf("repository error"))
 
-	authUseCase := impl.NewAuthUseCase(log, mockAuthRepository, nil)
+	authUseCase := impl.NewAuthUseCaseImpl(log, mockAuthRepository, nil)
 
 	err := authUseCase.AddToBlacklist("token_error")
 

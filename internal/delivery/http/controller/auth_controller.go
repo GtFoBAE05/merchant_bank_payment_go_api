@@ -10,10 +10,10 @@ import (
 
 type AuthController struct {
 	Log         *logrus.Logger
-	AuthUseCase usecase.AuthUseCaseInterface
+	AuthUseCase usecase.AuthUseCase
 }
 
-func NewAuthController(logger *logrus.Logger, authUseCase usecase.AuthUseCaseInterface) *AuthController {
+func NewAuthController(logger *logrus.Logger, authUseCase usecase.AuthUseCase) *AuthController {
 	return &AuthController{
 		Log:         logger,
 		AuthUseCase: authUseCase,

@@ -11,21 +11,21 @@ import (
 	"merchant_bank_payment_go_api/internal/usecase"
 )
 
-type AuthUseCase struct {
+type AuthUseCaseImpl struct {
 	Log             *logrus.Logger
 	AuthRepository  repository.AuthRepository
-	CustomerUseCase usecase.CustomerUseCaseInterface
+	CustomerUseCase usecase.CustomerUseCase
 }
 
-func NewAuthUseCase(log *logrus.Logger, authRepository repository.AuthRepository, customerUseCase usecase.CustomerUseCaseInterface) *AuthUseCase {
-	return &AuthUseCase{
+func NewAuthUseCaseImpl(log *logrus.Logger, authRepository repository.AuthRepository, customerUseCase usecase.CustomerUseCase) *AuthUseCaseImpl {
+	return &AuthUseCaseImpl{
 		Log:             log,
 		AuthRepository:  authRepository,
 		CustomerUseCase: customerUseCase,
 	}
 }
 
-func (c *AuthUseCase) Login(request model.LoginRequest) (model.LoginResponse, error) {
+func (c *AuthUseCaseImpl) Login(request model.LoginRequest) (model.LoginResponse, error) {
 	c.Log.Infof("Attempting login for username: %s", request.Username)
 	customer, err := c.CustomerUseCase.FindByUsername(request.Username)
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *AuthUseCase) Login(request model.LoginRequest) (model.LoginResponse, er
 	}, nil
 }
 
-func (c *AuthUseCase) Logout(accessToken string) error {
+func (c *AuthUseCaseImpl) Logout(accessToken string) error {
 	c.Log.Infof("Attempting logout for accessToken: %s", accessToken)
 
 	blacklisted, err := c.IsTokenBlacklisted(accessToken)
@@ -72,7 +72,7 @@ func (c *AuthUseCase) Logout(accessToken string) error {
 	return nil
 }
 
-func (c *AuthUseCase) IsTokenBlacklisted(accessToken string) (bool, error) {
+func (c *AuthUseCaseImpl) IsTokenBlacklisted(accessToken string) (bool, error) {
 	isBlacklisted, err := c.AuthRepository.IsTokenBlacklisted(accessToken)
 	if err != nil {
 		c.Log.Errorf("Error checking if token %s is blacklisted: %v", accessToken, err)
@@ -80,7 +80,7 @@ func (c *AuthUseCase) IsTokenBlacklisted(accessToken string) (bool, error) {
 	return isBlacklisted, err
 }
 
-func (c *AuthUseCase) AddToBlacklist(accessToken string) error {
+func (c *AuthUseCaseImpl) AddToBlacklist(accessToken string) error {
 	c.Log.Infof("Attempting to add token %s to the blacklist", accessToken)
 	return c.AuthRepository.AddToBlacklist(accessToken)
 }

@@ -7,19 +7,19 @@ import (
 	"merchant_bank_payment_go_api/internal/repository"
 )
 
-type CustomerUseCase struct {
+type CustomerUseCaseImpl struct {
 	Log                *logrus.Logger
 	CustomerRepository repository.CustomerRepository
 }
 
-func NewCustomerUseCase(log *logrus.Logger, customerRepository repository.CustomerRepository) *CustomerUseCase {
-	return &CustomerUseCase{
+func NewCustomerUseCaseImpl(log *logrus.Logger, customerRepository repository.CustomerRepository) *CustomerUseCaseImpl {
+	return &CustomerUseCaseImpl{
 		Log:                log,
 		CustomerRepository: customerRepository,
 	}
 }
 
-func (c *CustomerUseCase) FindById(id string) (entity.Customer, error) {
+func (c *CustomerUseCaseImpl) FindById(id string) (entity.Customer, error) {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {
 		c.Log.Errorf("Failed to parse uuid: %s", id)
@@ -34,7 +34,7 @@ func (c *CustomerUseCase) FindById(id string) (entity.Customer, error) {
 	return customer, nil
 }
 
-func (c *CustomerUseCase) FindByUsername(username string) (entity.Customer, error) {
+func (c *CustomerUseCaseImpl) FindByUsername(username string) (entity.Customer, error) {
 	c.Log.Debugf("Finding customer by username: %s", username)
 	customer, err := c.CustomerRepository.FindByUsername(username)
 	if err != nil {

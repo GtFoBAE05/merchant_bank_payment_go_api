@@ -33,7 +33,7 @@ func (m *MockCustomerRepository) FindByUsername(username string) (entity.Custome
 func TestFindById_ShouldReturnCustomer(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
-	useCase := impl.NewCustomerUseCase(log, mockRepo)
+	useCase := impl.NewCustomerUseCaseImpl(log, mockRepo)
 
 	customerId := uuid.New()
 	expectedCustomer := entity.Customer{
@@ -55,7 +55,7 @@ func TestFindById_ShouldReturnCustomer(t *testing.T) {
 func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
-	useCase := impl.NewCustomerUseCase(log, mockRepo)
+	useCase := impl.NewCustomerUseCaseImpl(log, mockRepo)
 
 	customerId := "abcdef"
 
@@ -70,7 +70,7 @@ func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
 func TestFindById_ShouldReturnError(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
-	useCase := impl.NewCustomerUseCase(log, mockRepo)
+	useCase := impl.NewCustomerUseCaseImpl(log, mockRepo)
 
 	customerId := uuid.New()
 
@@ -85,7 +85,7 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 func TestCustomerUseCase_FindByUsername(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
-	useCase := impl.NewCustomerUseCase(log, mockRepo)
+	useCase := impl.NewCustomerUseCaseImpl(log, mockRepo)
 
 	expectedCustomer := entity.Customer{
 		Id:        uuid.New(),
@@ -106,7 +106,7 @@ func TestCustomerUseCase_FindByUsername(t *testing.T) {
 func TestFindByUsername_ShouldReturnError(t *testing.T) {
 	mockRepo := new(MockCustomerRepository)
 	log := logrus.New()
-	useCase := impl.NewCustomerUseCase(log, mockRepo)
+	useCase := impl.NewCustomerUseCaseImpl(log, mockRepo)
 
 	username := "budi"
 
