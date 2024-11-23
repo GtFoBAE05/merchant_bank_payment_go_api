@@ -9,9 +9,9 @@ import (
 	"testing"
 )
 
-const filename = "test_blacklist_token.json"
+const blacklistTempFilename = "test_blacklist_token.json"
 
-func createDataFile() {
+func CreateBlacklistTempFile() {
 	tokens := []string{"token1", "token2", "token3"}
 
 	fileContent, err := json.Marshal(tokens)
@@ -20,30 +20,27 @@ func createDataFile() {
 		return
 	}
 
-	err = os.WriteFile(filename, fileContent, 0644)
+	err = os.WriteFile(blacklistTempFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
-func clearDataFile() {
-	err := os.Remove(filename)
+func DeleteBlacklistTempFile() {
+	err := os.Remove(blacklistTempFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
 }
 
 func TestLoadBlackList_ShouldReturnBlackListToken(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	expectedTokens := []string{"token1", "token2", "token3"}
 
 	log := logrus.New()
-	repo := impl.AuthRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	loadedToken, err := repo.LoadBlacklist()
 
@@ -55,10 +52,7 @@ func TestLoadBlacklist_ShouldReturnError(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
-	repo := impl.AuthRepositoryImpl{
-		Filename: invalidFilename,
-		Log:      log,
-	}
+	repo := impl.NewAuthRepository(log, invalidFilename)
 
 	tokens, err := repo.LoadBlacklist()
 
@@ -67,21 +61,18 @@ func TestLoadBlacklist_ShouldReturnError(t *testing.T) {
 }
 
 func TestSaveBlacklist_ShouldReturnSuccess(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	expectedTokens := []string{"token1", "token2", "token3", "token4"}
 
 	log := logrus.New()
-	repo := impl.AuthRepositoryImpl{
-		Log:      log,
-		Filename: filename,
-	}
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	blacklistedTokens := []string{"token1", "token2", "token3", "token4"}
 	err := repo.SaveBlacklist(blacklistedTokens)
 
-	fileContent, err := os.ReadFile(filename)
+	fileContent, err := os.ReadFile(blacklistTempFilename)
 	assert.Nil(t, err)
 
 	var loadedTokens []string
@@ -105,19 +96,19 @@ func TestSaveBlacklist_ShouldReturnError(t *testing.T) {
 }
 
 func TestAddToBlacklist_ShouldAddNewToken(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	token := "token4"
 	expectedBlacklistToken := []string{"token1", "token2", "token3", "token4"}
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, filename)
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	err := repo.AddToBlacklist(token)
 	assert.Nil(t, err)
 
-	fileContent, err := os.ReadFile(filename)
+	fileContent, err := os.ReadFile(blacklistTempFilename)
 	assert.Nil(t, err)
 
 	var savedTokens []string
@@ -128,13 +119,13 @@ func TestAddToBlacklist_ShouldAddNewToken(t *testing.T) {
 }
 
 func TestAddToBlacklist_ShouldReturnErrorWhenAlreadyBlacklisted(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	token := "token1"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, filename)
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	err := repo.AddToBlacklist(token)
 	assert.NotNil(t, err)
@@ -152,13 +143,13 @@ func TestAddToBlacklist_ShouldReturnErrorIfLoadFails(t *testing.T) {
 }
 
 func TestIsTokenBlacklist_ShouldReturnTrue(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	token := "token1"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, filename)
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	blacklisted, err := repo.IsTokenBlacklisted(token)
 	assert.True(t, blacklisted)
@@ -166,13 +157,13 @@ func TestIsTokenBlacklist_ShouldReturnTrue(t *testing.T) {
 }
 
 func TestIsTokenBlacklist_ShouldReturnFalse(t *testing.T) {
-	t.Cleanup(clearDataFile)
-	createDataFile()
+	t.Cleanup(DeleteBlacklistTempFile)
+	CreateBlacklistTempFile()
 
 	token := "token4"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, filename)
+	repo := impl.NewAuthRepository(log, blacklistTempFilename)
 
 	blacklisted, err := repo.IsTokenBlacklisted(token)
 	assert.False(t, blacklisted)

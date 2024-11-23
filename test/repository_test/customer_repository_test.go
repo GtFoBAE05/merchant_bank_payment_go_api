@@ -11,9 +11,9 @@ import (
 	"testing"
 )
 
-const filename = "test_customers.json"
+const customerFilename = "test_customers.json"
 
-func createDataFile() {
+func CreateCustomerTempFile() {
 	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
 	if err != nil {
 		logrus.Error("Failed to parse UUID:", err)
@@ -34,23 +34,23 @@ func createDataFile() {
 		return
 	}
 
-	err = os.WriteFile(filename, fileContent, 0644)
+	err = os.WriteFile(customerFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
-func clearDataFile() {
-	err := os.Remove(filename)
+func DeleteCustomerTempfile() {
+	err := os.Remove(customerFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
 }
 
 func TestLoadCustomers_ShouldReturnCustomerList(t *testing.T) {
-	t.Cleanup(clearDataFile)
+	t.Cleanup(DeleteCustomerTempfile)
 
-	createDataFile()
+	CreateCustomerTempFile()
 
 	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
 	if err != nil {
@@ -66,10 +66,7 @@ func TestLoadCustomers_ShouldReturnCustomerList(t *testing.T) {
 	}}
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, customerFilename)
 
 	loadedCustomers, err := repo.LoadCustomers()
 
@@ -86,10 +83,7 @@ func TestLoadCustomers_ShouldReturnError(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: invalidFilename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, invalidFilename)
 
 	customers, err := repo.LoadCustomers()
 
@@ -98,9 +92,9 @@ func TestLoadCustomers_ShouldReturnError(t *testing.T) {
 }
 
 func TestFindById_ShouldReturnCustomer(t *testing.T) {
-	t.Cleanup(clearDataFile)
+	t.Cleanup(DeleteCustomerTempfile)
 
-	createDataFile()
+	CreateCustomerTempFile()
 
 	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
 	if err != nil {
@@ -116,10 +110,7 @@ func TestFindById_ShouldReturnCustomer(t *testing.T) {
 	}
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, customerFilename)
 
 	loadedCustomer, err := repo.FindById(parsedUUID)
 	assert.Nil(t, err)
@@ -131,9 +122,9 @@ func TestFindById_ShouldReturnCustomer(t *testing.T) {
 }
 
 func TestFindById_ShouldReturnError(t *testing.T) {
-	t.Cleanup(clearDataFile)
+	t.Cleanup(DeleteCustomerTempfile)
 
-	createDataFile()
+	CreateCustomerTempFile()
 
 	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-000000000000")
 	if err != nil {
@@ -141,10 +132,7 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 	}
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, customerFilename)
 
 	loadedCustomer, err := repo.FindById(parsedUUID)
 	assert.NotNil(t, err)
@@ -152,9 +140,9 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 }
 
 func TestFindByUsername_ShouldReturnCustomer(t *testing.T) {
-	t.Cleanup(clearDataFile)
+	t.Cleanup(DeleteCustomerTempfile)
 
-	createDataFile()
+	CreateCustomerTempFile()
 
 	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
 	if err != nil {
@@ -170,10 +158,7 @@ func TestFindByUsername_ShouldReturnCustomer(t *testing.T) {
 	}
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, customerFilename)
 
 	loadedCustomer, err := repo.FindByUsername("budi")
 	assert.Nil(t, err)
@@ -185,15 +170,12 @@ func TestFindByUsername_ShouldReturnCustomer(t *testing.T) {
 }
 
 func TestFindByUsername_ShouldReturnError(t *testing.T) {
-	t.Cleanup(clearDataFile)
+	t.Cleanup(DeleteCustomerTempfile)
 
-	createDataFile()
+	CreateCustomerTempFile()
 
 	log := logrus.New()
-	repo := impl.CustomerRepositoryImpl{
-		Filename: filename,
-		Log:      log,
-	}
+	repo := impl.NewCustomerRepository(log, customerFilename)
 
 	loadedCustomer, err := repo.FindByUsername("aaa")
 	assert.NotNil(t, err)
