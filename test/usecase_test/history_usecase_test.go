@@ -47,6 +47,7 @@ func TestAddHistory_ShouldCallRepository(t *testing.T) {
 	err := historyUseCase.AddHistory(customerId.String(), action, details)
 
 	assert.Nil(t, err)
+	mockHistoryRepository.AssertExpectations(t)
 }
 
 func TestAddHistory_ShouldReturnErrorWhenInvalidCustomerId(t *testing.T) {
