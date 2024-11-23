@@ -65,7 +65,7 @@ func TestLoadMerchant_ShouldReturnMerchantList(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewMerchantRepository(log, merchantFilename)
 
-	merchantResult, err := repo.LoadMerchant()
+	merchantResult, err := repo.LoadMerchants()
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(expectedMerchant), len(merchantResult))
@@ -81,7 +81,7 @@ func TestLoadMerchant_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewMerchantRepository(log, invalidFilename)
 
-	merchantResult, err := repo.LoadMerchant()
+	merchantResult, err := repo.LoadMerchants()
 
 	assert.Nil(t, merchantResult)
 	assert.NotNil(t, err)
