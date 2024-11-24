@@ -15,8 +15,8 @@ type BootstrapConfig struct {
 
 func Bootstrap(config *BootstrapConfig) *gin.Engine {
 	historyRepository := repositoryImpl.NewHistoryRepositoryImpl(config.Log, "internal/repository/data/History.json")
-	customerRepository := repositoryImpl.NewCustomerRepository(config.Log, "internal/repository/data/Customer.json")
-	merchantRepository := repositoryImpl.NewMerchantRepository(config.Log, "internal/repository/data/Merchant.json")
+	customerRepository := repositoryImpl.NewCustomerRepositoryImpl(config.Log, "internal/repository/data/Customer.json")
+	merchantRepository := repositoryImpl.NewMerchantRepositoryImpl(config.Log, "internal/repository/data/Merchant.json")
 	authRepository := repositoryImpl.NewAuthRepository(config.Log, "internal/repository/data/BlacklistToken.json")
 	paymentTransactionRepository := repositoryImpl.NewPaymentTransactionImpl(config.Log, "internal/repository/data/PaymentTransactions.json")
 
