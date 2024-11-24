@@ -46,7 +46,7 @@ func TestLoadPaymentTransaction_ShouldReturnPaymentTransactionToken(t *testing.T
 	assert.Equal(t, len(test_helpers.ExpectedPayments), len(paymentTransactionResult))
 }
 
-func TestLoadPaymentTransaction_ShouldReturnError(t *testing.T) {
+func TestLoadPaymentTransaction_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
@@ -56,6 +56,27 @@ func TestLoadPaymentTransaction_ShouldReturnError(t *testing.T) {
 
 	assert.Nil(t, paymentTransactionResult)
 	assert.NotNil(t, err)
+}
+
+func TestLoadPayment_ShouldReturnError_WhenInvalidContent(t *testing.T) {
+	err := os.WriteFile(test_helpers.PaymentTransactionTempFilename, []byte(""), 0644)
+	if err != nil {
+		logrus.Error("Error writing to file:", err)
+		return
+	}
+
+	log := logrus.New()
+	repo := impl.NewPaymentTransactionImpl(log, test_helpers.PaymentTransactionTempFilename)
+
+	paymentResult, err := repo.LoadPayments()
+
+	assert.Nil(t, paymentResult)
+	assert.NotNil(t, err)
+
+	err = os.Remove(test_helpers.PaymentTransactionTempFilename)
+	if err != nil {
+		logrus.Error("Error deleting to file:", err)
+	}
 }
 
 func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
@@ -127,7 +148,7 @@ func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 	assert.Equal(t, addedPayments, paymentTransactionResult)
 }
 
-func TestAddToPaymentTransaction_ShouldReturnErrorWhenLoadFails(t *testing.T) {
+func TestAddToPaymentTransaction_ShouldReturnError_WhenLoadFails(t *testing.T) {
 	invalidFilename := "nonexistent_folder/test_payments_transaction.json"
 
 	newPayments := entity.Payment{
