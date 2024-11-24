@@ -1,4 +1,4 @@
-package controller_test
+package controller
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/delivery/http/controller"
 	"merchant_bank_payment_go_api/internal/delivery/http/middleware"
-	auth "merchant_bank_payment_go_api/internal/jwt"
+	jwtutils "merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"net/http"
 	"net/http/httptest"
@@ -164,7 +164,7 @@ func TestLogin_ShouldReturnError_WhenInvalidCredential(t *testing.T) {
 }
 
 func TestLogout_ShouldReturnSuccess_WhenTokenIsValid(t *testing.T) {
-	token, _ := auth.GenerateAccessToken(uuid.New().String())
+	token, _ := jwtutils.GenerateAccessToken(uuid.New().String())
 	commonResponse := model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusOK,
 		Message:    "Successfully logged out",
