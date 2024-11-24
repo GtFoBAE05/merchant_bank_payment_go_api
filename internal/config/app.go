@@ -14,11 +14,13 @@ type BootstrapConfig struct {
 }
 
 func Bootstrap(config *BootstrapConfig) *gin.Engine {
+	historyRepository := repositoryImpl.NewHistoryRepositoryImpl(config.Log, "internal/repository/data/History.json")
 	customerRepository := repositoryImpl.NewCustomerRepository(config.Log, "internal/repository/data/Customer.json")
 	authRepository := repositoryImpl.NewAuthRepository(config.Log, "internal/repository/data/BlacklistToken.json")
 
+	historyUsecase := usecaseImpl.NewHistoryUseCaseImpl(config.Log, historyRepository)
 	customerUseCase := usecaseImpl.NewCustomerUseCaseImpl(config.Log, customerRepository)
-	authUseCase := usecaseImpl.NewAuthUseCaseImpl(config.Log, authRepository, customerUseCase)
+	authUseCase := usecaseImpl.NewAuthUseCaseImpl(config.Log, authRepository, customerUseCase, historyUsecase)
 
 	authController := controller.NewAuthController(config.Log, authUseCase)
 
