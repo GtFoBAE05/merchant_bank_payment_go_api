@@ -2,7 +2,6 @@ package impl
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
@@ -11,15 +10,13 @@ import (
 )
 
 type AuthUseCaseImpl struct {
-	Log             *logrus.Logger
 	AuthRepository  repository.AuthRepository
 	CustomerUseCase usecase.CustomerUseCase
 	HistoryUseCase  usecase.HistoryUseCase
 }
 
-func NewAuthUseCaseImpl(log *logrus.Logger, authRepository repository.AuthRepository, customerUseCase usecase.CustomerUseCase, historyUseCase usecase.HistoryUseCase) *AuthUseCaseImpl {
+func NewAuthUseCaseImpl(authRepository repository.AuthRepository, customerUseCase usecase.CustomerUseCase, historyUseCase usecase.HistoryUseCase) *AuthUseCaseImpl {
 	return &AuthUseCaseImpl{
-		Log:             log,
 		AuthRepository:  authRepository,
 		CustomerUseCase: customerUseCase,
 		HistoryUseCase:  historyUseCase,
@@ -27,79 +24,73 @@ func NewAuthUseCaseImpl(log *logrus.Logger, authRepository repository.AuthReposi
 }
 
 func (c *AuthUseCaseImpl) Login(request model.LoginRequest) (model.LoginResponse, error) {
-	c.Log.Infof("Attempting login for username: %s", request.Username)
-
 	customer, err := c.CustomerUseCase.FindByUsername(request.Username)
 	if err != nil {
-		errLog := c.HistoryUseCase.LogAndAddHistory("-", "LOGIN", fmt.Sprintf("Login failed because customer with username %s not exists", request.Username), err)
-		if errLog != nil {
-			return model.LoginResponse{}, errLog
+		errLogHistory := c.HistoryUseCase.LogAndAddHistory("-", "LOGIN", fmt.Sprintf("Login failed because customer with username %s not exists", request.Username), err)
+		if errLogHistory != nil {
+			return model.LoginResponse{}, errLogHistory
 		}
 		return model.LoginResponse{}, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(request.Password))
 	if err != nil {
-		errLog := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Invalid credential", err)
-		if errLog != nil {
-			return model.LoginResponse{}, errLog
+		errLogHistory := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Invalid credentials", err)
+		if errLogHistory != nil {
+			return model.LoginResponse{}, errLogHistory
 		}
-		return model.LoginResponse{}, fmt.Errorf("invalid credential")
+		return model.LoginResponse{}, fmt.Errorf("invalid credentials")
 	}
 
 	accessToken, err := jwtutils.GenerateAccessToken(customer.Id.String())
 	if err != nil {
-		errLog := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Failed to generate access token", err)
-		if errLog != nil {
-			return model.LoginResponse{}, errLog
+		errLogHistory := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Failed to generate access token", err)
+		if errLogHistory != nil {
+			return model.LoginResponse{}, errLogHistory
 		}
 		return model.LoginResponse{}, err
 	}
 
-	errLog := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Login successful", nil)
-	if errLog != nil {
-		return model.LoginResponse{}, errLog
+	errLogHistory := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Login successful", nil)
+	if errLogHistory != nil {
+		return model.LoginResponse{}, errLogHistory
 	}
 
-	return model.LoginResponse{
-		AccessToken: accessToken,
-	}, nil
+	return model.LoginResponse{AccessToken: accessToken}, nil
 }
 
 func (c *AuthUseCaseImpl) Logout(accessToken string) error {
-	c.Log.Infof("Attempting logout for access token: %s", accessToken)
-
 	userId, err := jwtutils.ExtractIDFromToken(accessToken)
 	if err != nil {
-		errLog := c.HistoryUseCase.LogAndAddHistory("-", "LOGOUT", fmt.Sprintf("Logout failed: %v", err), err)
-		if errLog != nil {
-			return errLog
+		errLogHistory := c.HistoryUseCase.LogAndAddHistory("-", "LOGOUT", fmt.Sprintf("Logout failed: %v", err), err)
+		if errLogHistory != nil {
+			return errLogHistory
 		}
 		return err
 	}
 
-	errLog := c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Customer id extracted successfully", nil)
-	if errLog != nil {
-		return errLog
+	errLogHistory := c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Customer ID extracted successfully", nil)
+	if errLogHistory != nil {
+		return errLogHistory
 	}
 
 	err = c.AuthRepository.AddToBlacklist(accessToken)
 	if err != nil {
-		errLog := c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", fmt.Sprintf("Failed to blacklist token: %v", err), err)
-		if errLog != nil {
-			return errLog
+		errLogHistory = c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", fmt.Sprintf("Failed to blacklist token: %v", err), err)
+		if errLogHistory != nil {
+			return errLogHistory
 		}
 		return err
 	}
 
-	errLog = c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Token blacklisted successfully", nil)
-	if errLog != nil {
-		return errLog
+	errLogHistory = c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Token blacklisted successfully", nil)
+	if errLogHistory != nil {
+		return errLogHistory
 	}
 
-	errLog = c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Logout successful", nil)
-	if errLog != nil {
-		return errLog
+	errLogHistory = c.HistoryUseCase.LogAndAddHistory(userId, "LOGOUT", "Logout successful", nil)
+	if errLogHistory != nil {
+		return errLogHistory
 	}
 
 	return nil

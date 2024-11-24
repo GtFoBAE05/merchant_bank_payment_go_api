@@ -55,6 +55,8 @@ func (ac *AuthenticationController) Login(c *gin.Context) {
 }
 
 func (ac *AuthenticationController) Logout(c *gin.Context) {
+	ac.Log.Debug("Attempting lgoout for user")
+
 	token, exists := c.Get("token")
 	if !exists {
 		ac.Log.Warn("Token not found in context")
@@ -69,7 +71,7 @@ func (ac *AuthenticationController) Logout(c *gin.Context) {
 	tokenString, _ := token.(string)
 	err := ac.AuthUseCase.Logout(tokenString)
 	if err != nil {
-		ac.Log.Warn("Error when logout")
+		ac.Log.Warn("Error during logout")
 		c.JSON(http.StatusUnauthorized, model.CommonResponse[interface{}]{
 			HttpStatus: http.StatusUnauthorized,
 			Message:    err.Error(),

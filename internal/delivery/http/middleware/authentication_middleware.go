@@ -81,6 +81,19 @@ func AuthenticationMiddleware(authUseCase usecase.AuthUseCase) gin.HandlerFunc {
 			return
 		}
 
+		userId, err := auth.ExtractIDFromToken(tokenString)
+		if err != nil {
+			logrus.Errorf("Error extracting ID from token: %v", err)
+			c.JSON(http.StatusUnauthorized, model.CommonResponse[interface{}]{
+				HttpStatus: http.StatusUnauthorized,
+				Message:    "Invalid token data",
+				Data:       nil,
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set("user_id", userId)
 		c.Set("token", tokenString)
 		c.Next()
 	}

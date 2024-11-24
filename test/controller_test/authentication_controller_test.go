@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/delivery/http/controller"
 	"merchant_bank_payment_go_api/internal/delivery/http/middleware"
-	jwtutils "merchant_bank_payment_go_api/internal/jwt"
+	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"net/http"
 	"net/http/httptest"
