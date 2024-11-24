@@ -2,7 +2,7 @@ package impl
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"merchant_bank_payment_go_api/internal/entity"
@@ -43,6 +43,7 @@ func (r *CustomerRepositoryImpl) LoadCustomers() ([]entity.Customer, error) {
 
 func (r *CustomerRepositoryImpl) FindById(id uuid.UUID) (entity.Customer, error) {
 	r.Log.Debugf("Finding customer by id: %s", id.String())
+
 	customers, err := r.LoadCustomers()
 	if err != nil {
 		r.Log.Errorf("Error loading customers from file %s: %v", r.Filename, err)
@@ -56,12 +57,14 @@ func (r *CustomerRepositoryImpl) FindById(id uuid.UUID) (entity.Customer, error)
 		}
 	}
 
-	r.Log.Errorf("Customer with id %s not found in %s", id, r.Filename)
-	return entity.Customer{}, errors.New("customer not found")
+	err = fmt.Errorf("customer with id %s not found in %s", id, r.Filename)
+	r.Log.Errorf(err.Error())
+	return entity.Customer{}, err
 }
 
 func (r *CustomerRepositoryImpl) FindByUsername(username string) (entity.Customer, error) {
 	r.Log.Debugf("Finding customer by username: %s", username)
+
 	customers, err := r.LoadCustomers()
 	if err != nil {
 		r.Log.Errorf("Error loading customers from file %s: %v", r.Filename, err)
@@ -75,6 +78,7 @@ func (r *CustomerRepositoryImpl) FindByUsername(username string) (entity.Custome
 		}
 	}
 
-	r.Log.Errorf("Customer with username %s not found in %s", username, r.Filename)
-	return entity.Customer{}, errors.New("customer not found")
+	err = fmt.Errorf("customer with username %s not found in %s", username, r.Filename)
+	r.Log.Errorf(err.Error())
+	return entity.Customer{}, err
 }
