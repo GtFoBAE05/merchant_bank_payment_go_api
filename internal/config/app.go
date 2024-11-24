@@ -16,16 +16,22 @@ type BootstrapConfig struct {
 func Bootstrap(config *BootstrapConfig) *gin.Engine {
 	historyRepository := repositoryImpl.NewHistoryRepositoryImpl(config.Log, "internal/repository/data/History.json")
 	customerRepository := repositoryImpl.NewCustomerRepository(config.Log, "internal/repository/data/Customer.json")
+	merchantRepository := repositoryImpl.NewMerchantRepository(config.Log, "internal/repository/data/Merchant.json")
 	authRepository := repositoryImpl.NewAuthRepository(config.Log, "internal/repository/data/BlacklistToken.json")
+	paymentTransactionRepository := repositoryImpl.NewPaymentTransactionImpl(config.Log, "internal/repository/data/PaymentTransactions.json")
 
 	historyUsecase := usecaseImpl.NewHistoryUseCaseImpl(config.Log, historyRepository)
 	customerUseCase := usecaseImpl.NewCustomerUseCaseImpl(config.Log, customerRepository)
+	merchantUseCase := usecaseImpl.NewMerchantUseCaseImpl(config.Log, merchantRepository)
 	authUseCase := usecaseImpl.NewAuthUseCaseImpl(config.Log, authRepository, customerUseCase, historyUsecase)
+	paymentTransactionUseCase := usecaseImpl.NewPaymentTransactionUseCaseImpl(config.Log, paymentTransactionRepository, customerUseCase,
+		merchantUseCase, historyUsecase)
 
 	authController := controller.NewAuthController(config.Log, authUseCase)
+	paymentController := controller.NewPaymentController(config.Log, paymentTransactionUseCase)
 
 	router := gin.Default()
-	route.ConfigureRouter(router, authController, authUseCase)
+	route.ConfigureRouter(router, authController, paymentController, authUseCase)
 
 	return router
 }

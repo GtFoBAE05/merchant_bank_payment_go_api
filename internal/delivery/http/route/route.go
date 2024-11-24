@@ -7,7 +7,7 @@ import (
 	"merchant_bank_payment_go_api/internal/usecase/impl"
 )
 
-func ConfigureRouter(router *gin.Engine, authController *controller.AuthController, authUseCase *impl.AuthUseCaseImpl) {
+func ConfigureRouter(router *gin.Engine, authController *controller.AuthController, paymentController *controller.PaymentController, authUseCase *impl.AuthUseCaseImpl) {
 	authMiddleware := middleware.AuthMiddleware(authUseCase)
 	publicRoute := router.Group("/api/auth")
 	{
@@ -17,5 +17,6 @@ func ConfigureRouter(router *gin.Engine, authController *controller.AuthControll
 	protectedRoute := router.Group("/api", authMiddleware)
 	{
 		protectedRoute.POST("/auth/logout", authController.Logout)
+		protectedRoute.POST("/payment", paymentController.AddPayment)
 	}
 }

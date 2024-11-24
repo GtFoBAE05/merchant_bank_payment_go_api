@@ -1,3 +1,9 @@
 [
-  
+  {
+    "Id": "abd320d6-adbe-423f-985e-f57c0a545a04",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "MerchantId": "66e02583-71d2-4ae2-9d74-d5d9f9b9d618",
+    "Amount": 10000,
+    "Timestamp": "2024-11-24 18:05:48.712072576"
+  }
 ]
