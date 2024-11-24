@@ -37,7 +37,7 @@ func TestLoadMerchant_ShouldReturnMerchantList(t *testing.T) {
 	CreateMerchantTempFile()
 
 	log := logrus.New()
-	repo := impl.NewMerchantRepository(log, test_helpers.MerchantFilename)
+	repo := impl.NewMerchantRepositoryImpl(log, test_helpers.MerchantFilename)
 
 	merchantResult, err := repo.LoadMerchants()
 
@@ -49,11 +49,11 @@ func TestLoadMerchant_ShouldReturnMerchantList(t *testing.T) {
 	assert.Equal(t, test_helpers.ExpectedMerchants[0].UpdatedAt, merchantResult[0].UpdatedAt)
 }
 
-func TestLoadMerchant_ShouldReturnError(t *testing.T) {
+func TestLoadMerchant_ShouldReturnError_WhenInvalidFileName(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
-	repo := impl.NewMerchantRepository(log, invalidFilename)
+	repo := impl.NewMerchantRepositoryImpl(log, invalidFilename)
 
 	merchantResult, err := repo.LoadMerchants()
 
@@ -61,12 +61,33 @@ func TestLoadMerchant_ShouldReturnError(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestLoadMerchant_ShouldReturnError_WhenInvalidContent(t *testing.T) {
+	err := os.WriteFile(test_helpers.MerchantFilename, []byte(""), 0644)
+	if err != nil {
+		logrus.Error("Error writing to file:", err)
+		return
+	}
+
+	log := logrus.New()
+	repo := impl.NewMerchantRepositoryImpl(log, test_helpers.MerchantFilename)
+
+	customerResults, err := repo.LoadMerchants()
+
+	assert.Nil(t, customerResults)
+	assert.NotNil(t, err)
+
+	err = os.Remove(test_helpers.MerchantFilename)
+	if err != nil {
+		logrus.Error("Error deleting to file:", err)
+	}
+}
+
 func TestFindById_ShouldReturnMerchant(t *testing.T) {
 	t.Cleanup(DeleteMerchantTempFile)
 	CreateMerchantTempFile()
 
 	log := logrus.New()
-	repo := impl.NewMerchantRepository(log, test_helpers.MerchantFilename)
+	repo := impl.NewMerchantRepositoryImpl(log, test_helpers.MerchantFilename)
 
 	merchantResult, err := repo.FindById(test_helpers.MerchantId)
 	assert.Nil(t, err)
@@ -82,9 +103,18 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 
 	merchantUuid := uuid.New()
 	log := logrus.New()
-	repo := impl.NewMerchantRepository(log, test_helpers.MerchantFilename)
+	repo := impl.NewMerchantRepositoryImpl(log, test_helpers.MerchantFilename)
 
 	loadedMerchant, err := repo.FindById(merchantUuid)
 	assert.NotNil(t, err)
 	assert.Equal(t, entity.Merchant{}, loadedMerchant)
+}
+
+func TestFindById_ShouldReturnError_WhenLoadMerchantError(t *testing.T) {
+	log := logrus.New()
+	repo := impl.NewMerchantRepositoryImpl(log, "abc/invalidpath")
+
+	_, err := repo.FindById(uuid.New())
+
+	assert.NotNil(t, err)
 }

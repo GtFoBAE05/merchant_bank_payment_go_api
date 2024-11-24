@@ -14,7 +14,7 @@ type MerchantRepositoryImpl struct {
 	Filename string
 }
 
-func NewMerchantRepository(log *logrus.Logger, filename string) *MerchantRepositoryImpl {
+func NewMerchantRepositoryImpl(log *logrus.Logger, filename string) *MerchantRepositoryImpl {
 	return &MerchantRepositoryImpl{
 		Log:      log,
 		Filename: filename,
