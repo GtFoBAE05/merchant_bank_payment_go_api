@@ -43,7 +43,7 @@ func TestLoadBlackList_ShouldReturnBlackListToken(t *testing.T) {
 	assert.Equal(t, len(test_helpers.ExpectedTokens), len(loadedToken))
 }
 
-func TestLoadBlacklist_ShouldReturnError(t *testing.T) {
+func TestLoadBlacklist_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
@@ -53,6 +53,28 @@ func TestLoadBlacklist_ShouldReturnError(t *testing.T) {
 
 	assert.Nil(t, tokenResults)
 	assert.NotNil(t, err)
+}
+
+func TestLoadBlacklist_ShouldReturnError_WhenInvalidContent(t *testing.T) {
+	err := os.WriteFile(test_helpers.BlacklistTempFilename, []byte(""), 0644)
+	if err != nil {
+		logrus.Error("Error writing to file:", err)
+		return
+	}
+
+	log := logrus.New()
+	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+
+	blacklistResult, err := repo.LoadBlacklist()
+
+	assert.Nil(t, blacklistResult)
+	assert.NotNil(t, err)
+
+	err = os.Remove(test_helpers.BlacklistTempFilename)
+	if err != nil {
+		logrus.Error("Error deleting to file:", err)
+	}
+
 }
 
 func TestSaveBlacklist_ShouldReturnSuccess(t *testing.T) {
@@ -159,4 +181,14 @@ func TestIsTokenBlacklist_ShouldReturnFalse(t *testing.T) {
 	blacklisted, err := repo.IsTokenBlacklisted(token)
 	assert.False(t, blacklisted)
 	assert.Nil(t, err)
+}
+
+func TestIsTokenBlacklist_ShouldReturnError_WhenLoadError(t *testing.T) {
+	token := "token4"
+
+	log := logrus.New()
+	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+
+	_, err := repo.IsTokenBlacklisted(token)
+	assert.NotNil(t, err)
 }
