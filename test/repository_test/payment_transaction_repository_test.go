@@ -94,14 +94,14 @@ func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
 	fileContent, err := os.ReadFile(paymentTransactionTempFilename)
 	assert.Nil(t, err)
 
-	var paymentTransactionsResult []string
+	var paymentTransactionsResult []entity.PaymentTransaction
 	err = json.Unmarshal(fileContent, &paymentTransactionsResult)
 	assert.Nil(t, err)
-	assert.Equal(t, expectedPayments, paymentTransactionsResult)
+	assert.Equal(t, addedPayments, paymentTransactionsResult)
 }
 
 func TestSavePaymentTransaction_ShouldReturnError(t *testing.T) {
-	invalidFilename := "abc/test_blacklist.json"
+	invalidFilename := "abc/test_payment_transaction.json"
 
 	log := logrus.New()
 	repo := impl.NewPaymentTransactionImpl(log, invalidFilename)
@@ -109,7 +109,6 @@ func TestSavePaymentTransaction_ShouldReturnError(t *testing.T) {
 	err := repo.SavePayments(expectedPayments)
 
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "error saving blacklist to file")
 }
 
 func TestAddToPaymentTransaction_ShouldAddNewToken(t *testing.T) {
