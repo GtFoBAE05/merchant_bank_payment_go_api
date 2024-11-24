@@ -47,7 +47,7 @@ func TestLoadHistories_ShouldReturnHistories(t *testing.T) {
 	assert.Equal(t, test_helpers.ExpectedHistories, historiesResult)
 }
 
-func TestLoadHistories_ShouldReturnError(t *testing.T) {
+func TestLoadHistories_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
 	invalidFilename := "empty.json"
 
 	log := logrus.New()
@@ -57,6 +57,27 @@ func TestLoadHistories_ShouldReturnError(t *testing.T) {
 
 	assert.Nil(t, historiesResult)
 	assert.NotNil(t, err)
+}
+
+func TestLoadHistories_ShouldReturnError_WhenInvalidContent(t *testing.T) {
+	err := os.WriteFile(test_helpers.HistoryTempFilename, []byte(""), 0644)
+	if err != nil {
+		logrus.Error("Error writing to file:", err)
+		return
+	}
+
+	log := logrus.New()
+	repo := impl.NewHistoryRepositoryImpl(log, test_helpers.HistoryTempFilename)
+
+	historiesResult, err := repo.LoadHistories()
+
+	assert.Nil(t, historiesResult)
+	assert.NotNil(t, err)
+
+	err = os.Remove(test_helpers.HistoryTempFilename)
+	if err != nil {
+		logrus.Error("Error deleting to file:", err)
+	}
 }
 
 func TestSaveHistories_ShouldReturnSuccess(t *testing.T) {
