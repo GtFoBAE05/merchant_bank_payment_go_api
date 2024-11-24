@@ -39,3 +39,17 @@ func (h *HistoryUseCaseImpl) AddHistory(customerId, action, details string) erro
 
 	return h.HistoryRepository.AddHistory(newHistory)
 }
+
+func (h *HistoryUseCaseImpl) LogAndAddHistory(userId, action, message string, err error) error {
+	if err != nil {
+		h.Log.Errorf(message+": %v", err)
+	} else {
+		h.Log.Infof(message)
+	}
+
+	historyErr := h.AddHistory(userId, action, message)
+	if historyErr != nil {
+		h.Log.Errorf("Failed to add history for %s: %v", action, historyErr)
+	}
+	return historyErr
+}
