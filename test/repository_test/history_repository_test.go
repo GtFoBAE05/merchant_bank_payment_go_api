@@ -1,61 +1,33 @@
-package repository
+package repository_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/repository/impl"
+	"merchant_bank_payment_go_api/test/test_helpers"
 	"os"
 	"testing"
+	"time"
 )
 
-const historyTempFilename = "test_history.json"
-
-var customerId = uuid.New()
-var merchantId = uuid.New()
-
-var histories = []entity.History{
-	{
-		Id:         uuid.New(),
-		Action:     "LOGIN",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 10:25:38.12345678",
-		Details:    "Login successful",
-	},
-	{
-		Id:         uuid.New(),
-		Action:     "PAYMENT",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 14:48:22.987654321",
-		Details:    fmt.Sprintf("Payment of 20000 to Merchant Id %s", merchantId),
-	},
-	{
-		Id:         uuid.New(),
-		Action:     "LOGOUT",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 19:02:55.654321987",
-		Details:    "Logout successful",
-	},
-}
-
 func CreateHistoryTempFile() {
-	fileContent, err := json.Marshal(histories)
+	fileContent, err := json.Marshal(test_helpers.ExpectedHistories)
 	if err != nil {
 		logrus.Error("Error marshalling data:", err)
 		return
 	}
 
-	err = os.WriteFile(historyTempFilename, fileContent, 0644)
+	err = os.WriteFile(test_helpers.HistoryTempFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
 func DeleteHistoryTempFile() {
-	err := os.Remove(historyTempFilename)
+	err := os.Remove(test_helpers.HistoryTempFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
@@ -66,13 +38,13 @@ func TestLoadHistories_ShouldReturnHistories(t *testing.T) {
 	CreateHistoryTempFile()
 
 	log := logrus.New()
-	repo := impl.NewHistoryRepositoryImpl(log, historyTempFilename)
+	repo := impl.NewHistoryRepositoryImpl(log, test_helpers.HistoryTempFilename)
 
 	historiesResult, err := repo.LoadHistories()
 
 	assert.Nil(t, err)
-	assert.Equal(t, len(histories), len(historiesResult))
-	assert.Equal(t, histories, historiesResult)
+	assert.Equal(t, len(test_helpers.ExpectedHistories), len(historiesResult))
+	assert.Equal(t, test_helpers.ExpectedHistories, historiesResult)
 }
 
 func TestLoadHistories_ShouldReturnError(t *testing.T) {
@@ -81,9 +53,9 @@ func TestLoadHistories_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewHistoryRepositoryImpl(log, invalidFilename)
 
-	histories, err := repo.LoadHistories()
+	historiesResult, err := repo.LoadHistories()
 
-	assert.Nil(t, histories)
+	assert.Nil(t, historiesResult)
 	assert.NotNil(t, err)
 }
 
@@ -92,25 +64,25 @@ func TestSaveHistories_ShouldReturnSuccess(t *testing.T) {
 	CreateHistoryTempFile()
 
 	log := logrus.New()
-	repo := impl.NewHistoryRepositoryImpl(log, historyTempFilename)
+	repo := impl.NewHistoryRepositoryImpl(log, test_helpers.HistoryTempFilename)
 
-	expectedHistories := histories
-	expectedHistories = append(expectedHistories, entity.History{
+	newExpectedHistories := test_helpers.ExpectedHistories
+	newExpectedHistories = append(newExpectedHistories, entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 19:05:55.654321987",
+		CustomerId: uuid.New(),
+		Timestamp:  test_helpers.CreatedAt,
 		Details:    "Login successful",
 	})
-	err := repo.SaveHistories(expectedHistories)
+	err := repo.SaveHistories(newExpectedHistories)
 
-	fileContent, err := os.ReadFile(historyTempFilename)
+	fileContent, err := os.ReadFile(test_helpers.HistoryTempFilename)
 	assert.Nil(t, err)
 
 	var historiesResult []entity.History
 	err = json.Unmarshal(fileContent, &historiesResult)
 	assert.Nil(t, err)
-	assert.Equal(t, expectedHistories, historiesResult)
+	assert.Equal(t, newExpectedHistories, historiesResult)
 }
 
 func TestSaveHistories_ShouldReturnError(t *testing.T) {
@@ -119,7 +91,7 @@ func TestSaveHistories_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewHistoryRepositoryImpl(log, invalidFilename)
 
-	err := repo.SaveHistories(histories)
+	err := repo.SaveHistories(test_helpers.ExpectedHistories)
 
 	assert.NotNil(t, err)
 }
@@ -131,27 +103,27 @@ func TestAddToHistory_ShouldAddNewHistory(t *testing.T) {
 	newHistory := entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 19:05:55.654321987",
+		CustomerId: uuid.New(),
+		Timestamp:  test_helpers.CreatedAt,
 		Details:    "Login successful",
 	}
-	expectedHistories := histories
-	expectedHistories = append(expectedHistories, newHistory)
+	newExpectedHistories := test_helpers.ExpectedHistories
+	newExpectedHistories = append(newExpectedHistories, newHistory)
 
 	log := logrus.New()
-	repo := impl.NewHistoryRepositoryImpl(log, historyTempFilename)
+	repo := impl.NewHistoryRepositoryImpl(log, test_helpers.HistoryTempFilename)
 
 	err := repo.AddHistory(newHistory)
 	assert.Nil(t, err)
 
-	fileContent, err := os.ReadFile(historyTempFilename)
+	fileContent, err := os.ReadFile(test_helpers.HistoryTempFilename)
 	assert.Nil(t, err)
 
 	var historyResult []entity.History
 	err = json.Unmarshal(fileContent, &historyResult)
 	assert.Nil(t, err)
 
-	assert.Equal(t, expectedHistories, historyResult)
+	assert.Equal(t, newExpectedHistories, historyResult)
 }
 
 func TestAddToHistory_ShouldReturnErrorWhenLoadFails(t *testing.T) {
@@ -160,8 +132,8 @@ func TestAddToHistory_ShouldReturnErrorWhenLoadFails(t *testing.T) {
 	newHistory := entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: customerId,
-		Timestamp:  "2024-11-23 19:05:55.654321987",
+		CustomerId: uuid.New(),
+		Timestamp:  time.Now(),
 		Details:    "Login successful",
 	}
 
