@@ -7,41 +7,27 @@ import (
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/repository/impl"
+	"merchant_bank_payment_go_api/test/test_helpers"
 	"os"
 	"testing"
 )
 
-const customerFilename = "test_customers.json"
-
 func CreateCustomerTempFile() {
-	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
-	if err != nil {
-		logrus.Error("Failed to parse UUID:", err)
-		return
-	}
 
-	customers := []entity.Customer{{
-		Id:        parsedUUID,
-		Username:  "budi",
-		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: "2024-11-22 11:31:58.769884426",
-		UpdatedAt: "2024-11-22 11:31:58.769884426",
-	}}
-
-	fileContent, err := json.Marshal(customers)
+	fileContent, err := json.Marshal(test_helpers.ExpectedCustomers)
 	if err != nil {
 		logrus.Error("Error marshalling data:", err)
 		return
 	}
 
-	err = os.WriteFile(customerFilename, fileContent, 0644)
+	err = os.WriteFile(test_helpers.CustomerFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
 func DeleteCustomerTempfile() {
-	err := os.Remove(customerFilename)
+	err := os.Remove(test_helpers.CustomerFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
@@ -49,34 +35,20 @@ func DeleteCustomerTempfile() {
 
 func TestLoadCustomers_ShouldReturnCustomerList(t *testing.T) {
 	t.Cleanup(DeleteCustomerTempfile)
-
 	CreateCustomerTempFile()
 
-	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
-	if err != nil {
-		t.Fatalf("Error parsing UUID: %v", err)
-	}
-
-	expectedCustomers := []entity.Customer{{
-		Id:        parsedUUID,
-		Username:  "budi",
-		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: "2024-11-22 11:31:58.769884426",
-		UpdatedAt: "2024-11-22 11:31:58.769884426",
-	}}
-
 	log := logrus.New()
-	repo := impl.NewCustomerRepository(log, customerFilename)
+	repo := impl.NewCustomerRepository(log, test_helpers.CustomerFilename)
 
-	loadedCustomers, err := repo.LoadCustomers()
+	customerResults, err := repo.LoadCustomers()
 
 	assert.Nil(t, err)
-	assert.Equal(t, len(expectedCustomers), len(loadedCustomers))
-	assert.Equal(t, expectedCustomers[0].Id, loadedCustomers[0].Id)
-	assert.Equal(t, expectedCustomers[0].Username, loadedCustomers[0].Username)
-	assert.Equal(t, expectedCustomers[0].Password, loadedCustomers[0].Password)
-	assert.Equal(t, expectedCustomers[0].CreatedAt, loadedCustomers[0].CreatedAt)
-	assert.Equal(t, expectedCustomers[0].UpdatedAt, loadedCustomers[0].UpdatedAt)
+	assert.Equal(t, len(test_helpers.ExpectedCustomers), len(customerResults))
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Id, customerResults[0].Id)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Username, customerResults[0].Username)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Password, customerResults[0].Password)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].CreatedAt, customerResults[0].CreatedAt)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].UpdatedAt, customerResults[0].UpdatedAt)
 }
 
 func TestLoadCustomers_ShouldReturnError(t *testing.T) {
@@ -85,99 +57,64 @@ func TestLoadCustomers_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewCustomerRepository(log, invalidFilename)
 
-	customers, err := repo.LoadCustomers()
+	customerResults, err := repo.LoadCustomers()
 
-	assert.Nil(t, customers)
+	assert.Nil(t, customerResults)
 	assert.NotNil(t, err)
 }
 
 func TestFindById_ShouldReturnCustomer(t *testing.T) {
 	t.Cleanup(DeleteCustomerTempfile)
-
 	CreateCustomerTempFile()
 
-	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
-	if err != nil {
-		t.Fatalf("Error parsing UUID: %v", err)
-	}
-
-	expectedCustomers := entity.Customer{
-		Id:        parsedUUID,
-		Username:  "budi",
-		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: "2024-11-22 11:31:58.769884426",
-		UpdatedAt: "2024-11-22 11:31:58.769884426",
-	}
-
 	log := logrus.New()
-	repo := impl.NewCustomerRepository(log, customerFilename)
+	repo := impl.NewCustomerRepository(log, test_helpers.CustomerFilename)
 
-	loadedCustomer, err := repo.FindById(parsedUUID)
+	customerResult, err := repo.FindById(test_helpers.CustomerId)
 	assert.Nil(t, err)
-	assert.Equal(t, expectedCustomers.Id, loadedCustomer.Id)
-	assert.Equal(t, expectedCustomers.Username, loadedCustomer.Username)
-	assert.Equal(t, expectedCustomers.Password, loadedCustomer.Password)
-	assert.Equal(t, expectedCustomers.CreatedAt, loadedCustomer.CreatedAt)
-	assert.Equal(t, expectedCustomers.UpdatedAt, loadedCustomer.UpdatedAt)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Id, customerResult.Id)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Username, customerResult.Username)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Password, customerResult.Password)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].CreatedAt, customerResult.CreatedAt)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].UpdatedAt, customerResult.UpdatedAt)
 }
 
-func TestFindById_ShouldReturnError(t *testing.T) {
+func TestFindByCustomerId_ShouldReturnError(t *testing.T) {
 	t.Cleanup(DeleteCustomerTempfile)
-
 	CreateCustomerTempFile()
 
-	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-000000000000")
-	if err != nil {
-		t.Fatalf("Error parsing UUID: %v", err)
-	}
-
 	log := logrus.New()
-	repo := impl.NewCustomerRepository(log, customerFilename)
+	repo := impl.NewCustomerRepository(log, test_helpers.CustomerFilename)
 
-	loadedCustomer, err := repo.FindById(parsedUUID)
+	customerResult, err := repo.FindById(uuid.New())
 	assert.NotNil(t, err)
-	assert.Equal(t, entity.Customer{}, loadedCustomer)
+	assert.Equal(t, entity.Customer{}, customerResult)
 }
 
 func TestFindByUsername_ShouldReturnCustomer(t *testing.T) {
 	t.Cleanup(DeleteCustomerTempfile)
-
 	CreateCustomerTempFile()
 
-	parsedUUID, err := uuid.Parse("685729de-cd87-4524-80bc-9b19cf58df22")
-	if err != nil {
-		t.Fatalf("Error parsing UUID: %v", err)
-	}
-
-	expectedCustomers := entity.Customer{
-		Id:        parsedUUID,
-		Username:  "budi",
-		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: "2024-11-22 11:31:58.769884426",
-		UpdatedAt: "2024-11-22 11:31:58.769884426",
-	}
-
 	log := logrus.New()
-	repo := impl.NewCustomerRepository(log, customerFilename)
+	repo := impl.NewCustomerRepository(log, test_helpers.CustomerFilename)
 
-	loadedCustomer, err := repo.FindByUsername("budi")
+	customerResult, err := repo.FindByUsername(test_helpers.ExpectedCustomers[0].Username)
 	assert.Nil(t, err)
-	assert.Equal(t, expectedCustomers.Id, loadedCustomer.Id)
-	assert.Equal(t, expectedCustomers.Username, loadedCustomer.Username)
-	assert.Equal(t, expectedCustomers.Password, loadedCustomer.Password)
-	assert.Equal(t, expectedCustomers.CreatedAt, loadedCustomer.CreatedAt)
-	assert.Equal(t, expectedCustomers.UpdatedAt, loadedCustomer.UpdatedAt)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Id, customerResult.Id)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Username, customerResult.Username)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].Password, customerResult.Password)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].CreatedAt, customerResult.CreatedAt)
+	assert.Equal(t, test_helpers.ExpectedCustomers[0].UpdatedAt, customerResult.UpdatedAt)
 }
 
 func TestFindByUsername_ShouldReturnError(t *testing.T) {
 	t.Cleanup(DeleteCustomerTempfile)
-
 	CreateCustomerTempFile()
 
 	log := logrus.New()
-	repo := impl.NewCustomerRepository(log, customerFilename)
+	repo := impl.NewCustomerRepository(log, test_helpers.CustomerFilename)
 
-	loadedCustomer, err := repo.FindByUsername("aaa")
+	customerResult, err := repo.FindByUsername("aaa")
 	assert.NotNil(t, err)
-	assert.Equal(t, entity.Customer{}, loadedCustomer)
+	assert.Equal(t, entity.Customer{}, customerResult)
 }

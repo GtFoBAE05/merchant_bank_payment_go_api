@@ -33,7 +33,7 @@ func (h *HistoryUseCaseImpl) AddHistory(customerId, action, details string) erro
 		Id:         uuid.New(),
 		Action:     action,
 		CustomerId: parsedCustomerUUID,
-		Timestamp:  time.Now().Format("2006-01-02 15:04:05.999999999"),
+		Timestamp:  time.Now(),
 		Details:    details,
 	}
 

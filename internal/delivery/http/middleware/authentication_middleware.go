@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func AuthMiddleware(authUseCase usecase.AuthUseCase) gin.HandlerFunc {
+func AuthenticationMiddleware(authUseCase usecase.AuthUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logrus.Infof("Starting Authorization header validation for %s", c.Request.URL.Path)
 
@@ -81,6 +81,19 @@ func AuthMiddleware(authUseCase usecase.AuthUseCase) gin.HandlerFunc {
 			return
 		}
 
+		userId, err := auth.ExtractIDFromToken(tokenString)
+		if err != nil {
+			logrus.Errorf("Error extracting ID from token: %v", err)
+			c.JSON(http.StatusUnauthorized, model.CommonResponse[interface{}]{
+				HttpStatus: http.StatusUnauthorized,
+				Message:    "Invalid token data",
+				Data:       nil,
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set("user_id", userId)
 		c.Set("token", tokenString)
 		c.Next()
 	}

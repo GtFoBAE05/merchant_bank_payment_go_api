@@ -1,1 +1,44 @@
-[{"Id":"1f393bbf-a713-4d32-b29b-fb2c131ed9e7","Action":"LOGIN","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 13:22:24.785174701","Details":"Login successful"},{"Id":"2fd1e0cd-6932-4b17-9698-bd4cad4a4531","Action":"LOGOUT","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 13:22:37.825416214","Details":"Customer ID extracted successfully"},{"Id":"142b7fd5-0658-42e2-baae-50cd897eabb8","Action":"LOGOUT","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 13:22:37.825680884","Details":"Token blacklisted successfully"},{"Id":"c5d786aa-31d7-42ef-9789-242699e5ec33","Action":"LOGOUT","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 13:22:37.825960492","Details":"Logout successful"},{"Id":"c128dcee-3366-4ff1-9c25-9f0dc2af2e44","Action":"LOGIN","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 18:04:08.314195087","Details":"Login successful"},{"Id":"05c5fa8f-ea7f-4c18-83d5-a83e5894816a","Action":"PAYMENT","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 18:05:29.855940759","Details":"Payment failed: invalid UUID length: 4"},{"Id":"a293be60-30ce-479f-b72d-87b978c2c9fe","Action":"LOGIN","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 18:05:33.045611974","Details":"Login successful"},{"Id":"f76a1d46-8d90-4eaa-ba78-9b85bc731ab0","Action":"PAYMENT","CustomerId":"685729de-cd87-4524-80bc-9b19cf58df22","Timestamp":"2024-11-24 18:05:34.379787075","Details":"Payment failed: invalid UUID length: 4"}]
+[
+  {
+    "Id": "8ef17b09-9e39-46b7-aa93-a5cffd910a44",
+    "Action": "LOGIN",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:37:24.07500125",
+    "Details": "Login successful"
+  },
+  {
+    "Id": "2a5e2eca-9e12-4bee-9b51-da2b16ce7b04",
+    "Action": "PAYMENT",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:37:26.882075021",
+    "Details": "Payment failed: merchant not found"
+  },
+  {
+    "Id": "7cc28998-7e36-4406-84e6-6adb6c75d3e3",
+    "Action": "LOGOUT",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:37:38.694112582",
+    "Details": "Customer id extracted successfully"
+  },
+  {
+    "Id": "0453b6eb-8f3c-41e9-8b19-15541eea1f8a",
+    "Action": "LOGOUT",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:37:38.694369589",
+    "Details": "Token blacklisted successfully"
+  },
+  {
+    "Id": "7987144f-8f27-4e51-9258-86b3d676add5",
+    "Action": "LOGOUT",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:37:38.698344093",
+    "Details": "Logout successful"
+  },
+  {
+    "Id": "2ec1ffd9-eda1-40b2-ad2b-eace5ccb83bc",
+    "Action": "LOGIN",
+    "CustomerId": "685729de-cd87-4524-80bc-9b19cf58df22",
+    "Timestamp": "2024-11-24 23:43:29.717049615",
+    "Details": "Login successful"
+  }
+]

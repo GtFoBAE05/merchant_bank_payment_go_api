@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type History struct {
+type Payment struct {
 	Id         uuid.UUID `json:"id"`
-	Action     string    `json:"action"`
 	CustomerId uuid.UUID `json:"customer_id"`
+	MerchantId uuid.UUID `json:"merchant_id"`
+	Amount     int64     `json:"amount"`
 	Timestamp  time.Time `json:"timestamp"`
-	Details    string    `json:"details"`
 }

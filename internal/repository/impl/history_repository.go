@@ -61,7 +61,7 @@ func (h *HistoryRepositoryImpl) AddHistory(history entity.History) error {
 		return err
 	}
 
-	h.Log.Infof("Adding history %s to histories", history)
+	h.Log.Infof("Adding history: Action=%s, CustomerId=%s, Details=%s", history.Action, history.CustomerId, history.Details)
 
 	histories = append(histories, history)
 

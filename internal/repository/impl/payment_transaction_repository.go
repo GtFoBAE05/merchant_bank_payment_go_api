@@ -20,50 +20,51 @@ func NewPaymentTransactionImpl(log *logrus.Logger, filename string) *PaymentTran
 	}
 }
 
-func (p *PaymentTransactionImpl) LoadPayments() ([]entity.PaymentTransaction, error) {
-	p.Log.Debugf("Loading payment transaction from file: %s", p.Filename)
+func (p *PaymentTransactionImpl) LoadPayments() ([]entity.Payment, error) {
+	p.Log.Debugf("Loading payment transactions from file: %s", p.Filename)
 
 	file, err := utils.ReadJsonFile(p.Filename, p.Log)
 	if err != nil {
-		p.Log.Errorf("Error reading file %s: %v", p.Filename, err)
-		return nil, err
+		p.Log.Errorf("Failed to read file %s: %v", p.Filename, err)
+		return nil, fmt.Errorf("failed to read payment transactions file: %w", err)
 	}
 
-	p.Log.Tracef("File content: %s", string(file))
-
-	var paymentTransaction []entity.PaymentTransaction
-	err = json.Unmarshal(file, &paymentTransaction)
-	if err != nil {
-		p.Log.Errorf("Error decoding JSON from file %s: %v", p.Filename, err)
-		return nil, err
+	var transactions []entity.Payment
+	if err := json.Unmarshal(file, &transactions); err != nil {
+		p.Log.Errorf("Failed to decode JSON from file %s: %v", p.Filename, err)
+		return nil, fmt.Errorf("failed to parse payment transactions: %w", err)
 	}
 
-	p.Log.Infof("Successfully loaded %d payment transaction from %s", len(paymentTransaction), p.Filename)
-	return paymentTransaction, nil
+	p.Log.Infof("Successfully loaded %d payment transactions", len(transactions))
+	return transactions, nil
 }
 
-func (p *PaymentTransactionImpl) SavePayments(transactions []entity.PaymentTransaction) error {
-	p.Log.Infof("Saving %d payment transaction to file: %s", len(transactions), p.Filename)
+func (p *PaymentTransactionImpl) SavePayments(transactions []entity.Payment) error {
+	p.Log.Infof("Saving %d payment transactions to file: %s", len(transactions), p.Filename)
 
-	err := utils.WriteJSONFile(p.Filename, transactions, p.Log)
-	if err != nil {
+	if err := utils.WriteJSONFile(p.Filename, transactions, p.Log); err != nil {
 		p.Log.Errorf("Error saving payment transactions to file %s: %v", p.Filename, err)
-		return fmt.Errorf("error saving payment transactions to file %s: %v", p.Filename, err)
+		return fmt.Errorf("failed to save payment transactions: %w", err)
 	}
 
-	p.Log.Infof("Successfully saved payment transactions to %s", p.Filename)
+	p.Log.Infof("Successfully saved %d payment transactions", len(transactions))
 	return nil
 }
 
-func (p *PaymentTransactionImpl) AddPayment(payment entity.PaymentTransaction) error {
-	paymentTransactions, err := p.LoadPayments()
+func (p *PaymentTransactionImpl) AddPayment(payment entity.Payment) error {
+	transactions, err := p.LoadPayments()
 	if err != nil {
 		return err
 	}
 
-	p.Log.Infof("Adding payment %s to payment transaction", payment)
+	p.Log.Infof("Adding new payment transaction with ID %s", payment.Id.String())
+	transactions = append(transactions, payment)
 
-	paymentTransactions = append(paymentTransactions, payment)
+	if err := p.SavePayments(transactions); err != nil {
+		p.Log.Errorf("Failed to save updated payment transactions: %v", err)
+		return fmt.Errorf("error saving updated payment transactions: %w", err)
+	}
 
-	return p.SavePayments(paymentTransactions)
+	p.Log.Infof("Payment transaction %s successfully added", payment.Id.String())
+	return nil
 }

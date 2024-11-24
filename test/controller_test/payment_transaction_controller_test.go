@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/delivery/http/controller"
 	"merchant_bank_payment_go_api/internal/delivery/http/middleware"
-	jwtutils "merchant_bank_payment_go_api/internal/jwt"
+	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +37,7 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 	}
 	expectedCommonResponse := model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusOK,
-		Message:    "Successfully add payment",
+		Message:    "Successfully added payment",
 		Data:       nil,
 	}
 	bodyJson, err := json.Marshal(paymentRequest)
@@ -52,10 +52,10 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 	mockAuthUseCase.On("Logout", token).Return(nil)
 
 	log := logrus.New()
-	paymentController := controller.NewPaymentController(log, mockPaymentTransactionUseCase)
+	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
 
 	r := gin.Default()
-	r.Use(middleware.AuthMiddleware(mockAuthUseCase))
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
 	r.POST("/payment", paymentController.AddPayment)
 
 	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
@@ -93,7 +93,7 @@ func TestAddPayment_ShouldReturnError_WhenInvalidRequest(t *testing.T) {
 	mockPaymentTransactionUseCase := new(MockPaymentTransactionUseCase)
 
 	log := logrus.New()
-	paymentController := controller.NewPaymentController(log, mockPaymentTransactionUseCase)
+	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
 
 	r := gin.Default()
 	r.POST("/payment", paymentController.AddPayment)
@@ -142,10 +142,10 @@ func TestAddPayment_ShouldReturnError_WhenInvalidMerchantId(t *testing.T) {
 	mockAuthUseCase.On("Logout", token).Return(nil)
 
 	log := logrus.New()
-	paymentController := controller.NewPaymentController(log, mockPaymentTransactionUseCase)
+	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
 
 	r := gin.Default()
-	r.Use(middleware.AuthMiddleware(mockAuthUseCase))
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
 	r.POST("/payment", paymentController.AddPayment)
 
 	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))

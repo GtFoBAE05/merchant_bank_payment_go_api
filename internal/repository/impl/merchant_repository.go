@@ -2,7 +2,7 @@ package impl
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"merchant_bank_payment_go_api/internal/entity"
@@ -43,6 +43,7 @@ func (m *MerchantRepositoryImpl) LoadMerchants() ([]entity.Merchant, error) {
 
 func (m *MerchantRepositoryImpl) FindById(id uuid.UUID) (entity.Merchant, error) {
 	m.Log.Debugf("Finding merchant by id: %s", id.String())
+
 	merchants, err := m.LoadMerchants()
 	if err != nil {
 		m.Log.Errorf("Error loading merchants from file %s: %v", m.Filename, err)
@@ -56,6 +57,7 @@ func (m *MerchantRepositoryImpl) FindById(id uuid.UUID) (entity.Merchant, error)
 		}
 	}
 
-	m.Log.Errorf("Merchant with id %s not found in %s", id, m.Filename)
-	return entity.Merchant{}, errors.New("merchant not found")
+	err = fmt.Errorf("merchant with id %s not found in %s", id, m.Filename)
+	m.Log.Errorf(err.Error())
+	return entity.Merchant{}, err
 }

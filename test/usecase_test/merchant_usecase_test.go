@@ -3,42 +3,29 @@ package usecase
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/usecase/impl"
+	"merchant_bank_payment_go_api/test/test_helpers"
 	"testing"
 )
 
-type MockMerchantRepository struct {
-	mock.Mock
-}
-
-func (m *MockMerchantRepository) LoadMerchants() ([]entity.Merchant, error) {
-	args := m.Called()
-	return args.Get(0).([]entity.Merchant), args.Error(1)
-}
-
-func (m *MockMerchantRepository) FindById(id uuid.UUID) (entity.Merchant, error) {
-	args := m.Called(id)
-	return args.Get(0).(entity.Merchant), args.Error(1)
-}
-
 func TestFindById_ShouldReturnMerchant(t *testing.T) {
-	mockRepo := new(MockMerchantRepository)
-	log := logrus.New()
-	useCase := impl.NewMerchantUseCaseImpl(log, mockRepo)
+	mockMerchantRepository := new(test_helpers.MockMerchantRepository)
+	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
 	merchantId := uuid.New()
 	expectedMerchant := entity.Merchant{
 		Id:        merchantId,
 		Name:      "toko jaya",
-		CreatedAt: "2024-11-22 12:00:00.769884426",
-		UpdatedAt: "2024-11-22 12:00:00.769884426",
+		CreatedAt: test_helpers.CreatedAt,
+		UpdatedAt: test_helpers.UpdatedAt,
 	}
 
-	mockRepo.On("FindById", merchantId).Return(expectedMerchant, nil)
+	mockMerchantRepository.On("FindById", merchantId).Return(expectedMerchant, nil)
 
 	merchantResult, err := useCase.FindById(merchantId.String())
 
@@ -47,12 +34,13 @@ func TestFindById_ShouldReturnMerchant(t *testing.T) {
 }
 
 func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
-	mockRepo := new(MockMerchantRepository)
-	log := logrus.New()
-	useCase := impl.NewMerchantUseCaseImpl(log, mockRepo)
+	mockMerchantRepository := new(test_helpers.MockMerchantRepository)
+	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
 	merchantId := "nil"
-	mockRepo.On("FindById", merchantId).Return(entity.Merchant{}, errors.New("merchant not found"))
+	mockMerchantRepository.On("FindById", merchantId).Return(entity.Merchant{}, errors.New("merchant not found"))
 
 	merchantResult, err := useCase.FindById(merchantId)
 
@@ -61,12 +49,13 @@ func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
 }
 
 func TestFindById_ShouldReturnError(t *testing.T) {
-	mockRepo := new(MockMerchantRepository)
-	log := logrus.New()
-	useCase := impl.NewMerchantUseCaseImpl(log, mockRepo)
+	mockMerchantRepository := new(test_helpers.MockMerchantRepository)
+	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
 	merchantId := uuid.New()
-	mockRepo.On("FindById", merchantId).Return(entity.Merchant{}, errors.New("merchant not found"))
+	mockMerchantRepository.On("FindById", merchantId).Return(entity.Merchant{}, errors.New("merchant not found"))
 
 	merchantResult, err := useCase.FindById(merchantId.String())
 

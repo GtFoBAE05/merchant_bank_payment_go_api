@@ -3,27 +3,26 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	jwtutils "merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"merchant_bank_payment_go_api/internal/usecase"
 	"net/http"
 )
 
-type PaymentController struct {
+type PaymentTransactionController struct {
 	Log            *logrus.Logger
 	PaymentUseCase usecase.PaymentTransactionUseCase
 }
 
-func NewPaymentController(log *logrus.Logger, paymentUseCase usecase.PaymentTransactionUseCase) *PaymentController {
-	return &PaymentController{
+func NewPaymentTransactionController(log *logrus.Logger, paymentUseCase usecase.PaymentTransactionUseCase) *PaymentTransactionController {
+	return &PaymentTransactionController{
 		Log:            log,
 		PaymentUseCase: paymentUseCase,
 	}
 }
 
-func (p *PaymentController) AddPayment(c *gin.Context) {
+func (p *PaymentTransactionController) AddPayment(c *gin.Context) {
 	var paymentRequest model.PaymentRequest
-	p.Log.Debug("Attempting add payment request")
+	p.Log.Debug("Attempting to add payment request")
 
 	err := c.ShouldBind(&paymentRequest)
 	if err != nil {
@@ -36,25 +35,20 @@ func (p *PaymentController) AddPayment(c *gin.Context) {
 		return
 	}
 
-	token, exists := c.Get("token")
+	userId, exists := c.Get("user_id")
 	if !exists {
-		p.Log.Warn("Token not found in context")
+		p.Log.Warn("User ID not found in context")
 		c.JSON(http.StatusUnauthorized, model.CommonResponse[interface{}]{
 			HttpStatus: http.StatusUnauthorized,
-			Message:    "Token not found",
+			Message:    "User ID not found",
 			Data:       nil,
 		})
 		return
 	}
 
-	userId, err := jwtutils.ExtractIDFromToken(token.(string))
+	err = p.PaymentUseCase.AddPayment(userId.(string), paymentRequest)
 	if err != nil {
-		return
-	}
-
-	err = p.PaymentUseCase.AddPayment(userId, paymentRequest)
-	if err != nil {
-		p.Log.Warnf("Error add payment: %s", err)
+		p.Log.Warnf("Error adding payment: %v", err)
 		c.JSON(http.StatusBadRequest, model.CommonResponse[interface{}]{
 			HttpStatus: http.StatusBadRequest,
 			Message:    err.Error(),
@@ -63,10 +57,10 @@ func (p *PaymentController) AddPayment(c *gin.Context) {
 		return
 	}
 
-	p.Log.Infof("Successfully add payment")
+	p.Log.Infof("Successfully added payment")
 	c.JSON(http.StatusOK, model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusOK,
-		Message:    "Successfully add payment",
+		Message:    "Successfully added payment",
 		Data:       nil,
 	})
 }

@@ -8,19 +8,19 @@ import (
 	"net/http"
 )
 
-type AuthController struct {
+type AuthenticationController struct {
 	Log         *logrus.Logger
 	AuthUseCase usecase.AuthUseCase
 }
 
-func NewAuthController(logger *logrus.Logger, authUseCase usecase.AuthUseCase) *AuthController {
-	return &AuthController{
+func NewAuthenticationController(logger *logrus.Logger, authUseCase usecase.AuthUseCase) *AuthenticationController {
+	return &AuthenticationController{
 		Log:         logger,
 		AuthUseCase: authUseCase,
 	}
 }
 
-func (ac *AuthController) Login(c *gin.Context) {
+func (ac *AuthenticationController) Login(c *gin.Context) {
 	var loginRequest model.LoginRequest
 	ac.Log.Debug("Attempting login for user")
 
@@ -54,7 +54,9 @@ func (ac *AuthController) Login(c *gin.Context) {
 	})
 }
 
-func (ac *AuthController) Logout(c *gin.Context) {
+func (ac *AuthenticationController) Logout(c *gin.Context) {
+	ac.Log.Debug("Attempting lgoout for user")
+
 	token, exists := c.Get("token")
 	if !exists {
 		ac.Log.Warn("Token not found in context")
@@ -69,7 +71,7 @@ func (ac *AuthController) Logout(c *gin.Context) {
 	tokenString, _ := token.(string)
 	err := ac.AuthUseCase.Logout(tokenString)
 	if err != nil {
-		ac.Log.Warn("Error when logout")
+		ac.Log.Warn("Error during logout")
 		c.JSON(http.StatusUnauthorized, model.CommonResponse[interface{}]{
 			HttpStatus: http.StatusUnauthorized,
 			Message:    err.Error(),
