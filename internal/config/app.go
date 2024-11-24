@@ -21,10 +21,10 @@ func Bootstrap(config *BootstrapConfig) *gin.Engine {
 	paymentTransactionRepository := repositoryImpl.NewPaymentTransactionImpl(config.Log, "internal/repository/data/PaymentTransactions.json")
 
 	historyUsecase := usecaseImpl.NewHistoryUseCaseImpl(config.Log, historyRepository)
-	customerUseCase := usecaseImpl.NewCustomerUseCaseImpl(config.Log, customerRepository)
-	merchantUseCase := usecaseImpl.NewMerchantUseCaseImpl(config.Log, merchantRepository)
-	authUseCase := usecaseImpl.NewAuthUseCaseImpl(config.Log, authRepository, customerUseCase, historyUsecase)
-	paymentTransactionUseCase := usecaseImpl.NewPaymentTransactionUseCaseImpl(config.Log, paymentTransactionRepository, customerUseCase,
+	customerUseCase := usecaseImpl.NewCustomerUseCaseImpl(historyUsecase, customerRepository)
+	merchantUseCase := usecaseImpl.NewMerchantUseCaseImpl(historyUsecase, merchantRepository)
+	authUseCase := usecaseImpl.NewAuthUseCaseImpl(authRepository, customerUseCase, historyUsecase)
+	paymentTransactionUseCase := usecaseImpl.NewPaymentTransactionUseCaseImpl(paymentTransactionRepository, customerUseCase,
 		merchantUseCase, historyUsecase)
 
 	authController := controller.NewAuthenticationController(config.Log, authUseCase)
