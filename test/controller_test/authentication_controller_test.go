@@ -62,7 +62,7 @@ func TestLogin_ShouldReturnAccessToken(t *testing.T) {
 	mockAuthUseCase := new(MockAuthUseCase)
 	mockAuthUseCase.On("Login", loginRequest).Return(loginResponse, nil)
 
-	authController := controller.NewAuthController(log, mockAuthUseCase)
+	authController := controller.NewAuthenticationController(log, mockAuthUseCase)
 
 	r := gin.Default()
 	r.POST("/login", authController.Login)
@@ -100,7 +100,7 @@ func TestLogin_ShouldReturnError_WhenInvalidRequest(t *testing.T) {
 
 	log := logrus.New()
 	mockAuthUseCase := new(MockAuthUseCase)
-	authController := controller.NewAuthController(log, mockAuthUseCase)
+	authController := controller.NewAuthenticationController(log, mockAuthUseCase)
 
 	r := gin.Default()
 	r.POST("/login", authController.Login)
@@ -140,7 +140,7 @@ func TestLogin_ShouldReturnError_WhenInvalidCredential(t *testing.T) {
 	mockAuthUseCase := new(MockAuthUseCase)
 	mockAuthUseCase.On("Login", loginRequest).Return(model.LoginResponse{}, errors.New("invalid credential"))
 
-	authController := controller.NewAuthController(log, mockAuthUseCase)
+	authController := controller.NewAuthenticationController(log, mockAuthUseCase)
 
 	r := gin.Default()
 	r.POST("/login", authController.Login)
@@ -174,13 +174,13 @@ func TestLogout_ShouldReturnSuccess_WhenTokenIsValid(t *testing.T) {
 	log := logrus.New()
 	mockAuthUseCase := new(MockAuthUseCase)
 
-	authController := controller.NewAuthController(log, mockAuthUseCase)
+	authController := controller.NewAuthenticationController(log, mockAuthUseCase)
 	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, nil)
 	mockAuthUseCase.On("AddToBlacklist", token).Return(nil)
 	mockAuthUseCase.On("Logout", token).Return(nil)
 
 	r := gin.Default()
-	r.Use(middleware.AuthMiddleware(mockAuthUseCase))
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
 	r.POST("/logout", authController.Logout)
 
 	req := httptest.NewRequest("POST", "/logout", nil)
@@ -208,7 +208,7 @@ func TestLogout_ShouldReturnUnauthorized_WhenTokenNotFound(t *testing.T) {
 	}
 	log := logrus.New()
 	mockAuthUseCase := new(MockAuthUseCase)
-	authController := controller.NewAuthController(log, mockAuthUseCase)
+	authController := controller.NewAuthenticationController(log, mockAuthUseCase)
 
 	r := gin.Default()
 	r.POST("/logout", authController.Logout)

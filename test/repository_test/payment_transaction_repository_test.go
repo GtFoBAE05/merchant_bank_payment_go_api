@@ -15,7 +15,7 @@ const paymentTransactionTempFilename = "test_payment_transaction.json"
 
 var fromCustomerId = uuid.New()
 var toMerchantId = uuid.New()
-var expectedPayments = []entity.PaymentTransaction{
+var expectedPayments = []entity.Payment{
 	{
 		Id:         uuid.New(),
 		CustomerId: fromCustomerId,
@@ -74,7 +74,7 @@ func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
 	t.Cleanup(DeletePaymentTransactionTempFile)
 	CreatePaymentTransactionTempFile()
 
-	newPayments := entity.PaymentTransaction{
+	newPayments := entity.Payment{
 		Id:         uuid.New(),
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
@@ -92,7 +92,7 @@ func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
 	fileContent, err := os.ReadFile(paymentTransactionTempFilename)
 	assert.Nil(t, err)
 
-	var paymentTransactionsResult []entity.PaymentTransaction
+	var paymentTransactionsResult []entity.Payment
 	err = json.Unmarshal(fileContent, &paymentTransactionsResult)
 	assert.Nil(t, err)
 	assert.Equal(t, addedPayments, paymentTransactionsResult)
@@ -113,7 +113,7 @@ func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 	t.Cleanup(DeletePaymentTransactionTempFile)
 	CreatePaymentTransactionTempFile()
 
-	newPayments := entity.PaymentTransaction{
+	newPayments := entity.Payment{
 		Id:         uuid.New(),
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
@@ -132,7 +132,7 @@ func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 	fileContent, err := os.ReadFile(paymentTransactionTempFilename)
 	assert.Nil(t, err)
 
-	var paymentTransactionResult []entity.PaymentTransaction
+	var paymentTransactionResult []entity.Payment
 	err = json.Unmarshal(fileContent, &paymentTransactionResult)
 	assert.Nil(t, err)
 
@@ -142,7 +142,7 @@ func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 func TestAddToPaymentTransaction_ShouldReturnErrorWhenLoadFails(t *testing.T) {
 	invalidFilename := "nonexistent_folder/test_payments_transaction.json"
 
-	newPayments := entity.PaymentTransaction{
+	newPayments := entity.Payment{
 		Id:         uuid.New(),
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,

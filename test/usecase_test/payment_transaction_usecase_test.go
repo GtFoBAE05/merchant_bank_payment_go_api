@@ -16,17 +16,17 @@ type MockPaymentTransactionRepository struct {
 	mock.Mock
 }
 
-func (m *MockPaymentTransactionRepository) LoadPayments() ([]entity.PaymentTransaction, error) {
+func (m *MockPaymentTransactionRepository) LoadPayments() ([]entity.Payment, error) {
 	args := m.Called()
-	return args.Get(0).([]entity.PaymentTransaction), args.Error(1)
+	return args.Get(0).([]entity.Payment), args.Error(1)
 }
 
-func (m *MockPaymentTransactionRepository) SavePayments(paymentTransactions []entity.PaymentTransaction) error {
+func (m *MockPaymentTransactionRepository) SavePayments(paymentTransactions []entity.Payment) error {
 	args := m.Called(paymentTransactions)
 	return args.Error(0)
 }
 
-func (m *MockPaymentTransactionRepository) AddPayment(paymentTransaction entity.PaymentTransaction) error {
+func (m *MockPaymentTransactionRepository) AddPayment(paymentTransaction entity.Payment) error {
 	args := m.Called(paymentTransaction)
 	return args.Error(0)
 }

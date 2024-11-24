@@ -7,8 +7,8 @@ import (
 	"merchant_bank_payment_go_api/internal/usecase/impl"
 )
 
-func ConfigureRouter(router *gin.Engine, authController *controller.AuthController, paymentController *controller.PaymentController, authUseCase *impl.AuthUseCaseImpl) {
-	authMiddleware := middleware.AuthMiddleware(authUseCase)
+func ConfigureRouter(router *gin.Engine, authController *controller.AuthenticationController, paymentController *controller.PaymentTransactionController, authUseCase *impl.AuthUseCaseImpl) {
+	authMiddleware := middleware.AuthenticationMiddleware(authUseCase)
 	publicRoute := router.Group("/api/auth")
 	{
 		publicRoute.POST("/login", authController.Login)

@@ -27,8 +27,8 @@ func Bootstrap(config *BootstrapConfig) *gin.Engine {
 	paymentTransactionUseCase := usecaseImpl.NewPaymentTransactionUseCaseImpl(config.Log, paymentTransactionRepository, customerUseCase,
 		merchantUseCase, historyUsecase)
 
-	authController := controller.NewAuthController(config.Log, authUseCase)
-	paymentController := controller.NewPaymentController(config.Log, paymentTransactionUseCase)
+	authController := controller.NewAuthenticationController(config.Log, authUseCase)
+	paymentController := controller.NewPaymentTransactionController(config.Log, paymentTransactionUseCase)
 
 	router := gin.Default()
 	route.ConfigureRouter(router, authController, paymentController, authUseCase)

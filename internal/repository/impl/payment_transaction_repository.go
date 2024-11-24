@@ -20,7 +20,7 @@ func NewPaymentTransactionImpl(log *logrus.Logger, filename string) *PaymentTran
 	}
 }
 
-func (p *PaymentTransactionImpl) LoadPayments() ([]entity.PaymentTransaction, error) {
+func (p *PaymentTransactionImpl) LoadPayments() ([]entity.Payment, error) {
 	p.Log.Debugf("Loading payment transaction from file: %s", p.Filename)
 
 	file, err := utils.ReadJsonFile(p.Filename, p.Log)
@@ -31,7 +31,7 @@ func (p *PaymentTransactionImpl) LoadPayments() ([]entity.PaymentTransaction, er
 
 	p.Log.Tracef("File content: %s", string(file))
 
-	var paymentTransaction []entity.PaymentTransaction
+	var paymentTransaction []entity.Payment
 	err = json.Unmarshal(file, &paymentTransaction)
 	if err != nil {
 		p.Log.Errorf("Error decoding JSON from file %s: %v", p.Filename, err)
@@ -42,7 +42,7 @@ func (p *PaymentTransactionImpl) LoadPayments() ([]entity.PaymentTransaction, er
 	return paymentTransaction, nil
 }
 
-func (p *PaymentTransactionImpl) SavePayments(transactions []entity.PaymentTransaction) error {
+func (p *PaymentTransactionImpl) SavePayments(transactions []entity.Payment) error {
 	p.Log.Infof("Saving %d payment transaction to file: %s", len(transactions), p.Filename)
 
 	err := utils.WriteJSONFile(p.Filename, transactions, p.Log)
@@ -55,7 +55,7 @@ func (p *PaymentTransactionImpl) SavePayments(transactions []entity.PaymentTrans
 	return nil
 }
 
-func (p *PaymentTransactionImpl) AddPayment(payment entity.PaymentTransaction) error {
+func (p *PaymentTransactionImpl) AddPayment(payment entity.Payment) error {
 	paymentTransactions, err := p.LoadPayments()
 	if err != nil {
 		return err

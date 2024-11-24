@@ -8,19 +8,19 @@ import (
 	"net/http"
 )
 
-type AuthController struct {
+type AuthenticationController struct {
 	Log         *logrus.Logger
 	AuthUseCase usecase.AuthUseCase
 }
 
-func NewAuthController(logger *logrus.Logger, authUseCase usecase.AuthUseCase) *AuthController {
-	return &AuthController{
+func NewAuthenticationController(logger *logrus.Logger, authUseCase usecase.AuthUseCase) *AuthenticationController {
+	return &AuthenticationController{
 		Log:         logger,
 		AuthUseCase: authUseCase,
 	}
 }
 
-func (ac *AuthController) Login(c *gin.Context) {
+func (ac *AuthenticationController) Login(c *gin.Context) {
 	var loginRequest model.LoginRequest
 	ac.Log.Debug("Attempting login for user")
 
@@ -54,7 +54,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 	})
 }
 
-func (ac *AuthController) Logout(c *gin.Context) {
+func (ac *AuthenticationController) Logout(c *gin.Context) {
 	token, exists := c.Get("token")
 	if !exists {
 		ac.Log.Warn("Token not found in context")

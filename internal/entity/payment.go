@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type PaymentTransaction struct {
+type Payment struct {
 	Id         uuid.UUID
 	CustomerId uuid.UUID
 	MerchantId uuid.UUID

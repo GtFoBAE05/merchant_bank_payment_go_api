@@ -49,7 +49,7 @@ func (p *PaymentTransactionUseCaseImpl) AddPayment(customerId string, paymentReq
 		return err
 	}
 
-	transaction := entity.PaymentTransaction{
+	transaction := entity.Payment{
 		Id:         uuid.New(),
 		CustomerId: customer.Id,
 		MerchantId: merchant.Id,

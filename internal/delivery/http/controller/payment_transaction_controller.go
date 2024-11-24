@@ -9,19 +9,19 @@ import (
 	"net/http"
 )
 
-type PaymentController struct {
+type PaymentTransactionController struct {
 	Log            *logrus.Logger
 	PaymentUseCase usecase.PaymentTransactionUseCase
 }
 
-func NewPaymentController(log *logrus.Logger, paymentUseCase usecase.PaymentTransactionUseCase) *PaymentController {
-	return &PaymentController{
+func NewPaymentTransactionController(log *logrus.Logger, paymentUseCase usecase.PaymentTransactionUseCase) *PaymentTransactionController {
+	return &PaymentTransactionController{
 		Log:            log,
 		PaymentUseCase: paymentUseCase,
 	}
 }
 
-func (p *PaymentController) AddPayment(c *gin.Context) {
+func (p *PaymentTransactionController) AddPayment(c *gin.Context) {
 	var paymentRequest model.PaymentRequest
 	p.Log.Debug("Attempting add payment request")
 
