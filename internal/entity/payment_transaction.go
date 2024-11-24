@@ -9,6 +9,5 @@ type PaymentTransaction struct {
 	CustomerId uuid.UUID
 	MerchantId uuid.UUID
 	Amount     int64
-	IsSuccess  bool
 	Timestamp  string
 }

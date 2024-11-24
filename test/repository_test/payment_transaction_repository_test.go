@@ -21,7 +21,6 @@ var expectedPayments = []entity.PaymentTransaction{
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
 		Amount:     50000,
-		IsSuccess:  true,
 		Timestamp:  "2024-11-23 10:25:38.12345678",
 	},
 }
@@ -80,7 +79,6 @@ func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
 		Amount:     10000,
-		IsSuccess:  false,
 		Timestamp:  "2024-11-24 10:25:38.12345678",
 	}
 	addedPayments := expectedPayments
@@ -111,7 +109,7 @@ func TestSavePaymentTransaction_ShouldReturnError(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestAddToPaymentTransaction_ShouldAddNewToken(t *testing.T) {
+func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 	t.Cleanup(DeletePaymentTransactionTempFile)
 	CreatePaymentTransactionTempFile()
 
@@ -120,7 +118,6 @@ func TestAddToPaymentTransaction_ShouldAddNewToken(t *testing.T) {
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
 		Amount:     10000,
-		IsSuccess:  false,
 		Timestamp:  "2024-11-24 10:25:38.12345678",
 	}
 	addedPayments := expectedPayments
@@ -150,7 +147,6 @@ func TestAddToPaymentTransaction_ShouldReturnErrorWhenLoadFails(t *testing.T) {
 		CustomerId: fromCustomerId,
 		MerchantId: toMerchantId,
 		Amount:     10000,
-		IsSuccess:  false,
 		Timestamp:  "2024-11-24 10:25:38.12345678",
 	}
 

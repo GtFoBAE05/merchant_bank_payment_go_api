@@ -61,23 +61,28 @@ func TestAddPayment_ShouldCallRepository(t *testing.T) {
 	mockPaymentRepository.On("AddPayment", mock.Anything).Return(nil)
 
 	mockCustomerUseCase := new(MockCustomerUseCase)
-	mockCustomerUseCase.On("FindById", customerId).Return(expectedCustomer)
+	mockCustomerUseCase.On("FindById", customerId.String()).Return(expectedCustomer, nil)
 
 	mockMerchantUseCase := new(MockMerchantUseCase)
-	mockMerchantUseCase.On("FindById", merchantId).Return(expectedMerchant)
+	mockMerchantUseCase.On("FindById", merchantId.String()).Return(expectedMerchant, nil)
 
 	paymentRequest := model.PaymentRequest{
 		MerchantId: merchantId.String(),
 		Amount:     10000,
 	}
 
-	log := logrus.New()
-	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase)
+	mockHistoryUseCase := new(MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	err := paymentUseCase.AddPayment(paymentRequest)
+	log := logrus.New()
+	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase, mockHistoryUseCase)
+
+	err := paymentUseCase.AddPayment(customerId.String(), paymentRequest)
 
 	assert.Nil(t, err)
 	mockPaymentRepository.AssertExpectations(t)
+	mockCustomerUseCase.AssertExpectations(t)
+	mockMerchantUseCase.AssertExpectations(t)
 }
 
 func TestAddPayment_ShouldReturnErrorWhenInvalidCustomerId(t *testing.T) {
@@ -86,7 +91,7 @@ func TestAddPayment_ShouldReturnErrorWhenInvalidCustomerId(t *testing.T) {
 	mockPaymentRepository := new(MockPaymentTransactionRepository)
 
 	mockCustomerUseCase := new(MockCustomerUseCase)
-	mockCustomerUseCase.On("FindById", customerId).Return(errors.New("invalid customer"))
+	mockCustomerUseCase.On("FindById", customerId.String()).Return(entity.Customer{}, errors.New("invalid customer"))
 
 	mockMerchantUseCase := new(MockMerchantUseCase)
 
@@ -95,13 +100,17 @@ func TestAddPayment_ShouldReturnErrorWhenInvalidCustomerId(t *testing.T) {
 		Amount:     10000,
 	}
 
-	log := logrus.New()
-	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase)
+	mockHistoryUseCase := new(MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	err := paymentUseCase.AddPayment(paymentRequest)
+	log := logrus.New()
+	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase, mockHistoryUseCase)
+
+	err := paymentUseCase.AddPayment(customerId.String(), paymentRequest)
 
 	assert.NotNil(t, err)
-	mockPaymentRepository.AssertExpectations(t)
+	mockCustomerUseCase.AssertExpectations(t)
+	mockMerchantUseCase.AssertExpectations(t)
 }
 
 func TestAddPayment_ShouldReturnErrorWhenInvalidMerchantId(t *testing.T) {
@@ -119,10 +128,13 @@ func TestAddPayment_ShouldReturnErrorWhenInvalidMerchantId(t *testing.T) {
 	mockPaymentRepository.On("AddPayment", mock.Anything).Return(nil)
 
 	mockCustomerUseCase := new(MockCustomerUseCase)
-	mockCustomerUseCase.On("FindById", customerId).Return(expectedCustomer)
+	mockCustomerUseCase.On("FindById", customerId.String()).Return(expectedCustomer, nil)
 
 	mockMerchantUseCase := new(MockMerchantUseCase)
-	mockMerchantUseCase.On("FindById", merchantId).Return(errors.New("invalid merchant"))
+	mockMerchantUseCase.On("FindById", merchantId.String()).Return(entity.Merchant{}, errors.New("invalid merchant"))
+
+	mockHistoryUseCase := new(MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	paymentRequest := model.PaymentRequest{
 		MerchantId: merchantId.String(),
@@ -130,10 +142,11 @@ func TestAddPayment_ShouldReturnErrorWhenInvalidMerchantId(t *testing.T) {
 	}
 
 	log := logrus.New()
-	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase)
+	paymentUseCase := impl.NewPaymentTransactionUseCaseImpl(log, mockPaymentRepository, mockCustomerUseCase, mockMerchantUseCase, mockHistoryUseCase)
 
-	err := paymentUseCase.AddPayment(paymentRequest)
+	err := paymentUseCase.AddPayment(customerId.String(), paymentRequest)
 
 	assert.NotNil(t, err)
-	mockPaymentRepository.AssertExpectations(t)
+	mockCustomerUseCase.AssertExpectations(t)
+	mockMerchantUseCase.AssertExpectations(t)
 }
