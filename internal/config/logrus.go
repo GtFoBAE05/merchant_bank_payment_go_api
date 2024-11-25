@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 func NewLogger() *logrus.Logger {
@@ -16,12 +17,12 @@ func NewLogger() *logrus.Logger {
 		DisableColors: false,
 	})
 
-	//logFile, err := os.OpenFile("app_dev.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	//if err != nil {
-	//	log.Fatal("Failed to open log file for development, logging to stderr instead:", err)
-	//} else {
-	//	log.SetOutput(logFile)
-	//}
+	logFile, err := os.OpenFile("app_history.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal("Failed to open log file for development, logging to stderr instead:", err)
+	} else {
+		log.SetOutput(logFile)
+	}
 
 	return log
 }
