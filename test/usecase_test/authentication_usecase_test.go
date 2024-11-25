@@ -7,14 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/entity"
-	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"merchant_bank_payment_go_api/internal/usecase/impl"
+	"merchant_bank_payment_go_api/internal/utils"
 	"merchant_bank_payment_go_api/test/helper"
 	"testing"
 )
 
 func TestLogin_ShouldReturnLoginResponse(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
+
 	mockCustomerUseCase := new(helper.MockCustomerUseCase)
 	mockCustomerUseCase.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
 
@@ -153,7 +155,7 @@ func TestLogin_ShouldReturnError_WhenErrorLogOnFailedToLog(t *testing.T) {
 }
 
 func TestLogout_ShouldBlacklistToken(t *testing.T) {
-	accessToken, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
 
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -185,7 +187,7 @@ func TestLogout_ShouldReturnError_WhenAddToBlacklistFails(t *testing.T) {
 }
 
 func TestLogout_ShouldReturnError_WhenErrorLog(t *testing.T) {
-	accessToken, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
 
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file not exists"))
@@ -202,7 +204,7 @@ func TestLogout_ShouldReturnError_WhenErrorLog(t *testing.T) {
 }
 
 func TestLogout_ShouldReturnError_WhenErrorLogOnLogSuccessBlacklistToken(t *testing.T) {
-	accessToken, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
 
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
@@ -220,7 +222,7 @@ func TestLogout_ShouldReturnError_WhenErrorLogOnLogSuccessBlacklistToken(t *test
 }
 
 func TestLogout_ShouldReturnError_WhenErrorLogOnLogSuccessLogout(t *testing.T) {
-	accessToken, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
 
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
@@ -253,7 +255,7 @@ func TestLogout_ShouldReturnError_WhenErrorLogOnErrorExtractToken(t *testing.T) 
 }
 
 func TestLogout_ShouldReturnError_WhenErrorLogOnAddToBlacklistFails(t *testing.T) {
-	accessToken, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file not exists"))

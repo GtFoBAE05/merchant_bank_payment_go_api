@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/delivery/http/controller"
 	"merchant_bank_payment_go_api/internal/delivery/http/middleware"
-	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
+	"merchant_bank_payment_go_api/internal/utils"
 	"merchant_bank_payment_go_api/test/helper"
 	"net/http"
 	"net/http/httptest"
@@ -140,7 +140,8 @@ func TestLogin_ShouldReturnError_WhenInvalidCredential(t *testing.T) {
 }
 
 func TestLogout_ShouldReturnSuccess_WhenTokenIsValid(t *testing.T) {
-	token, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	utils.InitJwtConfig([]byte("abc"), 10)
+	token, _ := utils.GenerateAccessToken(uuid.New().String())
 	commonResponse := model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusOK,
 		Message:    "Successfully logged out",
@@ -206,7 +207,7 @@ func TestLogout_ShouldReturnUnauthorized_WhenTokenNotFound(t *testing.T) {
 }
 
 func TestLogout_ShouldReturnError_WhenErrorLogout(t *testing.T) {
-	token, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	token, _ := utils.GenerateAccessToken(uuid.New().String())
 	commonResponse := model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusUnauthorized,
 		Message:    "error on log out",

@@ -3,10 +3,10 @@ package impl
 import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
-	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"merchant_bank_payment_go_api/internal/repository"
 	"merchant_bank_payment_go_api/internal/usecase"
+	"merchant_bank_payment_go_api/internal/utils"
 )
 
 type AuthUseCaseImpl struct {
@@ -42,7 +42,7 @@ func (c *AuthUseCaseImpl) Login(request model.LoginRequest) (model.LoginResponse
 		return model.LoginResponse{}, fmt.Errorf("invalid credentials")
 	}
 
-	accessToken, err := jwtutils.GenerateAccessToken(customer.Id.String())
+	accessToken, err := utils.GenerateAccessToken(customer.Id.String())
 	if err != nil {
 		errLogHistory := c.HistoryUseCase.LogAndAddHistory(customer.Id.String(), "LOGIN", "Failed to generate access token", err)
 		if errLogHistory != nil {
@@ -60,7 +60,7 @@ func (c *AuthUseCaseImpl) Login(request model.LoginRequest) (model.LoginResponse
 }
 
 func (c *AuthUseCaseImpl) Logout(accessToken string) error {
-	userId, err := jwtutils.ExtractIDFromToken(accessToken)
+	userId, err := utils.ExtractIDFromToken(accessToken)
 	if err != nil {
 		errLogHistory := c.HistoryUseCase.LogAndAddHistory("-", "LOGOUT", fmt.Sprintf("Logout failed: %v", err), err)
 		if errLogHistory != nil {
