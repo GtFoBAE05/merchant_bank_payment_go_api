@@ -1,9 +1,10 @@
-package test_helpers
+package helper
 
 import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/entity"
+	"merchant_bank_payment_go_api/internal/model"
 )
 
 type MockCustomerRepository struct {
@@ -119,6 +120,30 @@ func (m *MockAuthRepository) IsTokenBlacklisted(token string) (bool, error) {
 	return args.Get(0).(bool), args.Error(1)
 }
 
+type MockAuthUseCase struct {
+	mock.Mock
+}
+
+func (m *MockAuthUseCase) Login(request model.LoginRequest) (model.LoginResponse, error) {
+	args := m.Called(request)
+	return args.Get(0).(model.LoginResponse), args.Error(1)
+}
+
+func (m *MockAuthUseCase) IsTokenBlacklisted(accessToken string) (bool, error) {
+	args := m.Called(accessToken)
+	return args.Get(0).(bool), args.Error(1)
+}
+
+func (m *MockAuthUseCase) AddToBlacklist(accessToken string) error {
+	args := m.Called(accessToken)
+	return args.Error(0)
+}
+
+func (m *MockAuthUseCase) Logout(token string) error {
+	args := m.Called(token)
+	return args.Error(0)
+}
+
 type MockPaymentTransactionRepository struct {
 	mock.Mock
 }
@@ -135,5 +160,14 @@ func (m *MockPaymentTransactionRepository) SavePayments(paymentTransactions []en
 
 func (m *MockPaymentTransactionRepository) AddPayment(paymentTransaction entity.Payment) error {
 	args := m.Called(paymentTransaction)
+	return args.Error(0)
+}
+
+type MockPaymentTransactionUseCase struct {
+	mock.Mock
+}
+
+func (m *MockPaymentTransactionUseCase) AddPayment(customerId string, paymentRequest model.PaymentRequest) error {
+	args := m.Called(customerId, paymentRequest)
 	return args.Error(0)
 }
