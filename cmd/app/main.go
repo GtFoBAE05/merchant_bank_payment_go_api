@@ -18,7 +18,8 @@ func main() {
 
 	router := config.Bootstrap(logger)
 
-	if err := router.Run(":4000"); err != nil {
+	port := cfg.Port
+	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start the server: ", err)
 	}
 }

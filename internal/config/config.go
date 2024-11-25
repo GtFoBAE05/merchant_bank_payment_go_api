@@ -10,6 +10,7 @@ import (
 type Config struct {
 	SecretKey       []byte
 	ExpireInMinutes int
+	Port            string
 }
 
 func LoadConfig() (*Config, error) {
@@ -28,8 +29,14 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("EXPIRE_IN_MINUTES is not set or invalid")
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4000"
+	}
+
 	return &Config{
 		SecretKey:       []byte(secretKey),
 		ExpireInMinutes: expireInMinutes,
+		Port:            port,
 	}, nil
 }
