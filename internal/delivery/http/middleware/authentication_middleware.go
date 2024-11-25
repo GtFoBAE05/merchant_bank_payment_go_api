@@ -3,9 +3,9 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	auth "merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"merchant_bank_payment_go_api/internal/usecase"
+	auth "merchant_bank_payment_go_api/internal/utils"
 	"net/http"
 	"strings"
 )

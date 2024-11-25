@@ -1,4 +1,4 @@
-package controller_test
+package middleware_test
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
+func TestAuthenticationMiddleware_ShouldReturnError_WhenNoHeader(t *testing.T) {
 	utils.InitJwtConfig([]byte("abc"), 10)
 
 	customerId := uuid.New()
@@ -29,8 +29,8 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 		Amount:     10000,
 	}
 	expectedCommonResponse := model.CommonResponse[interface{}]{
-		HttpStatus: http.StatusOK,
-		Message:    "Successfully added payment",
+		HttpStatus: http.StatusUnauthorized,
+		Message:    "Authorization Header is required",
 		Data:       nil,
 	}
 	bodyJson, err := json.Marshal(paymentRequest)
@@ -54,13 +54,12 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
 
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 
 	response := new(model.CommonResponse[interface{}])
 	err = json.Unmarshal(w.Body.Bytes(), &response)
@@ -70,47 +69,9 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 	assert.Equal(t, expectedCommonResponse.HttpStatus, response.HttpStatus)
 }
 
-func TestAddPayment_ShouldReturnError_WhenInvalidRequest(t *testing.T) {
-	token, _ := utils.GenerateAccessToken(uuid.New().String())
-	paymentRequest := model.PaymentRequest{
-		Amount: 10000,
-	}
-	expectedCommonResponse := model.CommonResponse[interface{}]{
-		HttpStatus: http.StatusBadRequest,
-		Message:    "Invalid body request",
-		Data:       nil,
-	}
-	bodyJson, err := json.Marshal(paymentRequest)
-	assert.Nil(t, err)
+func TestAuthenticationMiddleware_ShouldReturnError_WhenInvalidHeaderFormat(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
 
-	mockPaymentTransactionUseCase := new(helper.MockPaymentTransactionUseCase)
-
-	log := logrus.New()
-	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
-
-	r := gin.Default()
-	r.POST("/payment", paymentController.AddPayment)
-
-	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-
-	response := new(model.CommonResponse[interface{}])
-	err = json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Nil(t, err)
-
-	assert.Equal(t, expectedCommonResponse.Message, response.Message)
-	assert.Equal(t, expectedCommonResponse.HttpStatus, response.HttpStatus)
-}
-
-func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 	customerId := uuid.New()
 	token, _ := utils.GenerateAccessToken(customerId.String())
 	merchantId := uuid.New()
@@ -120,7 +81,7 @@ func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 	}
 	expectedCommonResponse := model.CommonResponse[interface{}]{
 		HttpStatus: http.StatusUnauthorized,
-		Message:    "User ID not found",
+		Message:    "Invalid Authorization Header format, must be 'Bearer <token>'",
 		Data:       nil,
 	}
 	bodyJson, err := json.Marshal(paymentRequest)
@@ -138,6 +99,59 @@ func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
 
 	r := gin.Default()
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
+	r.POST("/payment", paymentController.AddPayment)
+
+	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", " ")
+
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	response := new(model.CommonResponse[interface{}])
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expectedCommonResponse.Message, response.Message)
+	assert.Equal(t, expectedCommonResponse.HttpStatus, response.HttpStatus)
+}
+
+func TestAuthenticationMiddleware_ShouldReturnError_WhenHaveHeaderButNoToken(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
+
+	customerId := uuid.New()
+	token, _ := utils.GenerateAccessToken(customerId.String())
+	merchantId := uuid.New()
+	paymentRequest := model.PaymentRequest{
+		MerchantId: merchantId.String(),
+		Amount:     10000,
+	}
+	expectedCommonResponse := model.CommonResponse[interface{}]{
+		HttpStatus: http.StatusUnauthorized,
+		Message:    "Invalid or expired token",
+		Data:       nil,
+	}
+	bodyJson, err := json.Marshal(paymentRequest)
+	assert.Nil(t, err)
+
+	mockPaymentTransactionUseCase := new(helper.MockPaymentTransactionUseCase)
+	mockPaymentTransactionUseCase.On("AddPayment", customerId.String(), paymentRequest).Return(nil)
+
+	mockAuthUseCase := new(helper.MockAuthUseCase)
+	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, nil)
+	mockAuthUseCase.On("AddToBlacklist", token).Return(nil)
+	mockAuthUseCase.On("Logout", token).Return(nil)
+
+	log := logrus.New()
+	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
+
+	r := gin.Default()
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
 	r.POST("/payment", paymentController.AddPayment)
 
 	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
@@ -159,7 +173,9 @@ func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 	assert.Equal(t, expectedCommonResponse.HttpStatus, response.HttpStatus)
 }
 
-func TestAddPayment_ShouldReturnError_WhenInvalidMerchantId(t *testing.T) {
+func TestAuthenticationMiddleware_ShouldReturnError_WhenErrorCheckIsTokenBlacklisted(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
+
 	customerId := uuid.New()
 	token, _ := utils.GenerateAccessToken(customerId.String())
 	merchantId := uuid.New()
@@ -168,18 +184,18 @@ func TestAddPayment_ShouldReturnError_WhenInvalidMerchantId(t *testing.T) {
 		Amount:     10000,
 	}
 	expectedCommonResponse := model.CommonResponse[interface{}]{
-		HttpStatus: http.StatusBadRequest,
-		Message:    "invalid merchant id",
+		HttpStatus: http.StatusInternalServerError,
+		Message:    "Internal server error",
 		Data:       nil,
 	}
 	bodyJson, err := json.Marshal(paymentRequest)
 	assert.Nil(t, err)
 
 	mockPaymentTransactionUseCase := new(helper.MockPaymentTransactionUseCase)
-	mockPaymentTransactionUseCase.On("AddPayment", customerId.String(), paymentRequest).Return(errors.New("invalid merchant id"))
+	mockPaymentTransactionUseCase.On("AddPayment", customerId.String(), paymentRequest).Return(nil)
 
 	mockAuthUseCase := new(helper.MockAuthUseCase)
-	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, nil)
+	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(false, errors.New("internal error"))
 	mockAuthUseCase.On("AddToBlacklist", token).Return(nil)
 	mockAuthUseCase.On("Logout", token).Return(nil)
 
@@ -199,7 +215,59 @@ func TestAddPayment_ShouldReturnError_WhenInvalidMerchantId(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	response := new(model.CommonResponse[interface{}])
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expectedCommonResponse.Message, response.Message)
+	assert.Equal(t, expectedCommonResponse.HttpStatus, response.HttpStatus)
+}
+
+func TestAuthenticationMiddleware_ShouldReturnError_WhenTokenAlreadyBlacklisted(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
+
+	customerId := uuid.New()
+	token, _ := utils.GenerateAccessToken(customerId.String())
+	merchantId := uuid.New()
+	paymentRequest := model.PaymentRequest{
+		MerchantId: merchantId.String(),
+		Amount:     10000,
+	}
+	expectedCommonResponse := model.CommonResponse[interface{}]{
+		HttpStatus: http.StatusForbidden,
+		Message:    "Token is already blacklisted",
+		Data:       nil,
+	}
+	bodyJson, err := json.Marshal(paymentRequest)
+	assert.Nil(t, err)
+
+	mockPaymentTransactionUseCase := new(helper.MockPaymentTransactionUseCase)
+	mockPaymentTransactionUseCase.On("AddPayment", customerId.String(), paymentRequest).Return(nil)
+
+	mockAuthUseCase := new(helper.MockAuthUseCase)
+	mockAuthUseCase.On("IsTokenBlacklisted", token).Return(true, nil)
+	mockAuthUseCase.On("AddToBlacklist", token).Return(nil)
+	mockAuthUseCase.On("Logout", token).Return(nil)
+
+	log := logrus.New()
+	paymentController := controller.NewPaymentTransactionController(log, mockPaymentTransactionUseCase)
+
+	r := gin.Default()
+	r.Use(middleware.AuthenticationMiddleware(mockAuthUseCase))
+	r.POST("/payment", paymentController.AddPayment)
+
+	req := httptest.NewRequest("POST", "/payment", strings.NewReader(string(bodyJson)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
 
 	response := new(model.CommonResponse[interface{}])
 	err = json.Unmarshal(w.Body.Bytes(), &response)

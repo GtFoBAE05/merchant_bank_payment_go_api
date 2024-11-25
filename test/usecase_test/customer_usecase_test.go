@@ -7,27 +7,28 @@ import (
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/usecase/impl"
-	"merchant_bank_payment_go_api/test/test_helpers"
+	"merchant_bank_payment_go_api/test/helper"
 	"testing"
 )
 
 func TestFindById_ShouldReturnCustomer(t *testing.T) {
-	mockCustomerRepository := new(test_helpers.MockCustomerRepository)
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
 
-	mockCustomerRepository.On("FindById", test_helpers.CustomerId).Return(test_helpers.ExpectedCustomers[0], nil)
+	mockCustomerRepository.On("FindById", helper.CustomerId).Return(helper.ExpectedCustomers[0], nil)
 
-	customer, err := useCase.FindById(test_helpers.CustomerId.String())
+	customer, err := useCase.FindById(helper.CustomerId.String())
 
 	assert.Nil(t, err)
-	assert.Equal(t, test_helpers.ExpectedCustomers[0], customer)
+	assert.Equal(t, helper.ExpectedCustomers[0], customer)
+	mockCustomerRepository.AssertExpectations(t)
 }
 
-func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
-	mockCustomerRepository := new(test_helpers.MockCustomerRepository)
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+func TestFindById_ShouldReturnError_WhenFailedParseToken(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
 
@@ -41,9 +42,9 @@ func TestFindById_ShouldReturnErrorParseToken(t *testing.T) {
 	assert.Equal(t, entity.Customer{}, customer)
 }
 
-func TestFindById_ShouldReturnError(t *testing.T) {
-	mockCustomerRepository := new(test_helpers.MockCustomerRepository)
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+func TestFindById_ShouldReturnError_WhenCustomerNotFound(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
 
@@ -57,23 +58,56 @@ func TestFindById_ShouldReturnError(t *testing.T) {
 	assert.Equal(t, entity.Customer{}, customer)
 }
 
-func TestCustomerUseCase_FindByUsername(t *testing.T) {
-	mockCustomerRepository := new(test_helpers.MockCustomerRepository)
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+func TestFindById_ShouldReturnError_WhenLogOnErrorParseToken(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
+
+	_, err := useCase.FindById("12345")
+	assert.NotNil(t, err)
+}
+
+func TestFindById_ShouldReturnError_WhenLogOnReturnCustomerNotFound(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockCustomerRepository.On("FindById", helper.CustomerId).Return(entity.Customer{}, errors.New("customer not found"))
+	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
+
+	_, err := useCase.FindById(helper.CustomerId.String())
+	assert.NotNil(t, err)
+}
+
+func TestFindById_ShouldReturnError_WhenLogOnReturnCustomerError(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockCustomerRepository.On("FindById", helper.CustomerId).Return(helper.ExpectedCustomers[0], nil)
+	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
+
+	_, err := useCase.FindById(helper.CustomerId.String())
+	assert.NotNil(t, err)
+}
+
+func TestFindByUsername_ShouldReturnCustomer(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
 
-	mockCustomerRepository.On("FindByUsername", test_helpers.ExpectedCustomers[0].Username).Return(test_helpers.ExpectedCustomers[0], nil)
+	mockCustomerRepository.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
 
-	customer, err := useCase.FindByUsername(test_helpers.ExpectedCustomers[0].Username)
+	customer, err := useCase.FindByUsername(helper.ExpectedCustomers[0].Username)
 
 	assert.Nil(t, err)
-	assert.Equal(t, test_helpers.ExpectedCustomers[0], customer)
+	assert.Equal(t, helper.ExpectedCustomers[0], customer)
+	mockCustomerRepository.AssertExpectations(t)
 }
 
-func TestFindByUsername_ShouldReturnError(t *testing.T) {
-	mockCustomerRepository := new(test_helpers.MockCustomerRepository)
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+func TestFindByUsername_ShouldReturnError_WhenCustomerNotFound(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
 
@@ -85,4 +119,26 @@ func TestFindByUsername_ShouldReturnError(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, entity.Customer{}, customer)
+}
+
+func TestFindByUsername_ShouldReturnError_WhenLogOnReturnCustomerNotFound(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockCustomerRepository.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(entity.Customer{}, errors.New("customer not found"))
+	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
+
+	_, err := useCase.FindByUsername(helper.ExpectedCustomers[0].Username)
+	assert.NotNil(t, err)
+}
+
+func TestFindByUsername_ShouldReturnError_WhenLogOnReturnCustomerError(t *testing.T) {
+	mockCustomerRepository := new(helper.MockCustomerRepository)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockCustomerRepository.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
+	useCase := impl.NewCustomerUseCaseImpl(mockHistoryUseCase, mockCustomerRepository)
+
+	_, err := useCase.FindByUsername(helper.ExpectedCustomers[0].Username)
+	assert.NotNil(t, err)
 }

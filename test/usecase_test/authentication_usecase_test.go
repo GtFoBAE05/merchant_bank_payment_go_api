@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"errors"
@@ -7,35 +7,27 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"merchant_bank_payment_go_api/internal/entity"
-	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
 	"merchant_bank_payment_go_api/internal/usecase/impl"
-	"merchant_bank_payment_go_api/test/test_helpers"
+	"merchant_bank_payment_go_api/internal/utils"
+	"merchant_bank_payment_go_api/test/helper"
 	"testing"
 )
 
 func TestLogin_ShouldReturnLoginResponse(t *testing.T) {
-	customerId := uuid.New()
-	mockCustomer := entity.Customer{
-		Id:        customerId,
-		Username:  "budi",
-		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: test_helpers.CreatedAt,
-		UpdatedAt: test_helpers.UpdatedAt,
-	}
+	utils.InitJwtConfig([]byte("abc"), 10)
 
-	mockCustomerUseCase := new(test_helpers.MockCustomerUseCase)
-	mockCustomerUseCase.On("FindByUsername", "budi").Return(mockCustomer, nil)
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
+	mockCustomerUseCase.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
 
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
-
+	mockAuthRepository := new(helper.MockAuthRepository)
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
 
 	request := model.LoginRequest{
-		Username: "budi",
+		Username: helper.ExpectedCustomers[0].Username,
 		Password: "password",
 	}
 
@@ -45,14 +37,14 @@ func TestLogin_ShouldReturnLoginResponse(t *testing.T) {
 	assert.NotEmpty(t, response.AccessToken)
 }
 
-func TestLogin_ShouldReturnInvalidUsername(t *testing.T) {
-	mockCustomerUseCase := new(test_helpers.MockCustomerUseCase)
+func TestLogin_ShouldReturnError_WhenInvalidUsername(t *testing.T) {
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
 	mockCustomerUseCase.On("FindByUsername", "susi").Return(entity.Customer{}, errors.New("customer not found"))
 
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
 
 	request := model.LoginRequest{
@@ -66,23 +58,66 @@ func TestLogin_ShouldReturnInvalidUsername(t *testing.T) {
 	assert.Empty(t, response.AccessToken)
 }
 
-func TestLogin_ShouldReturnInvalidPassword(t *testing.T) {
+func TestLogin_ShouldReturnError_WhenInvalidPassword(t *testing.T) {
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
+	mockCustomerUseCase.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
+
+	request := model.LoginRequest{
+		Username: helper.ExpectedCustomers[0].Username,
+		Password: "password123",
+	}
+
+	response, err := authUseCase.Login(request)
+
+	assert.NotNil(t, err)
+	assert.Empty(t, response.AccessToken)
+}
+
+func TestLogin_ShouldReturnError_WhenErrorLogOnInvalidUsername(t *testing.T) {
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
+	mockCustomerUseCase.On("FindByUsername", "susi").Return(entity.Customer{}, errors.New("customer not found"))
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file history not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
+
+	request := model.LoginRequest{
+		Username: "susi",
+		Password: "password",
+	}
+
+	response, err := authUseCase.Login(request)
+
+	assert.NotNil(t, err)
+	assert.Empty(t, response.AccessToken)
+}
+
+func TestLogin_ShouldReturnError_WhenErrorLogOnInvalidPassword(t *testing.T) {
 	customerId := uuid.New()
 	mockCustomer := entity.Customer{
 		Id:        customerId,
 		Username:  "budi",
 		Password:  "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-		CreatedAt: test_helpers.CreatedAt,
-		UpdatedAt: test_helpers.UpdatedAt,
+		CreatedAt: helper.CreatedAt,
+		UpdatedAt: helper.UpdatedAt,
 	}
 
-	mockCustomerUseCase := new(test_helpers.MockCustomerUseCase)
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
 	mockCustomerUseCase.On("FindByUsername", "budi").Return(mockCustomer, nil)
 
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
-	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file history not exists"))
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
 
@@ -97,28 +132,50 @@ func TestLogin_ShouldReturnInvalidPassword(t *testing.T) {
 	assert.Empty(t, response.AccessToken)
 }
 
-func TestLogout_ShouldBlacklistToken(t *testing.T) {
-	newUuid, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+func TestLogin_ShouldReturnError_WhenErrorLogOnFailedToLog(t *testing.T) {
+	mockCustomerUseCase := new(helper.MockCustomerUseCase)
+	mockCustomerUseCase.On("FindByUsername", helper.ExpectedCustomers[0].Username).Return(helper.ExpectedCustomers[0], nil)
 
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file history not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, mockCustomerUseCase, mockHistoryUseCase)
+
+	request := model.LoginRequest{
+		Username: helper.ExpectedCustomers[0].Username,
+		Password: "password",
+	}
+
+	response, err := authUseCase.Login(request)
+
+	assert.NotNil(t, err)
+	assert.Empty(t, response.AccessToken)
+}
+
+func TestLogout_ShouldBlacklistToken(t *testing.T) {
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
-	mockAuthRepository.On("IsTokenBlacklisted", newUuid).Return(false, nil)
-	mockAuthRepository.On("AddToBlacklist", newUuid).Return(nil)
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", accessToken).Return(false, nil)
+	mockAuthRepository.On("AddToBlacklist", accessToken).Return(nil)
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
 
-	err := authUseCase.Logout(newUuid)
+	err := authUseCase.Logout(accessToken)
 
 	assert.Nil(t, err)
 }
 
 func TestLogout_ShouldReturnError_WhenAddToBlacklistFails(t *testing.T) {
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	mockAuthRepository.On("IsTokenBlacklisted", "invalid_token").Return(false, nil)
 	mockAuthRepository.On("AddToBlacklist", "invalid_token").Return(fmt.Errorf("repository error"))
 
@@ -129,11 +186,95 @@ func TestLogout_ShouldReturnError_WhenAddToBlacklistFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestLogout_ShouldReturnError_WhenErrorLog(t *testing.T) {
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", accessToken).Return(false, nil)
+	mockAuthRepository.On("AddToBlacklist", accessToken).Return(nil)
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
+
+	err := authUseCase.Logout(accessToken)
+
+	assert.NotNil(t, err)
+}
+
+func TestLogout_ShouldReturnError_WhenErrorLogOnLogSuccessBlacklistToken(t *testing.T) {
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, "Token blacklisted successfully", nil).Return(errors.New("file not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", accessToken).Return(false, nil)
+	mockAuthRepository.On("AddToBlacklist", accessToken).Return(nil)
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
+
+	err := authUseCase.Logout(accessToken)
+
+	assert.NotNil(t, err)
+}
+
+func TestLogout_ShouldReturnError_WhenErrorLogOnLogSuccessLogout(t *testing.T) {
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
+
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, "Token blacklisted successfully", nil).Return(nil)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, "Logout successful", nil).Return(errors.New("file not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", accessToken).Return(false, nil)
+	mockAuthRepository.On("AddToBlacklist", accessToken).Return(nil)
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
+
+	err := authUseCase.Logout(accessToken)
+
+	assert.NotNil(t, err)
+}
+
+func TestLogout_ShouldReturnError_WhenErrorLogOnErrorExtractToken(t *testing.T) {
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", "accessToken").Return(true, errors.New("access token already blacklisted"))
+	mockAuthRepository.On("AddToBlacklist", "accessToken").Return(errors.New("repository error"))
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
+	err := authUseCase.Logout("accessToken")
+
+	assert.NotNil(t, err)
+}
+
+func TestLogout_ShouldReturnError_WhenErrorLogOnAddToBlacklistFails(t *testing.T) {
+	accessToken, _ := utils.GenerateAccessToken(uuid.New().String())
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, "LOGOUT", "Customer ID extracted successfully", nil).Return(nil)
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("file not exists"))
+
+	mockAuthRepository := new(helper.MockAuthRepository)
+	mockAuthRepository.On("IsTokenBlacklisted", accessToken).Return(true, errors.New("access token already blacklisted"))
+	mockAuthRepository.On("AddToBlacklist", accessToken).Return(errors.New("repository error"))
+
+	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
+	err := authUseCase.Logout(accessToken)
+
+	assert.NotNil(t, err)
+}
+
 func TestIsTokenBlacklisted_ShouldReturnTrue(t *testing.T) {
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	mockAuthRepository.On("IsTokenBlacklisted", "blacklisted_token").Return(true, nil)
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
@@ -145,10 +286,10 @@ func TestIsTokenBlacklisted_ShouldReturnTrue(t *testing.T) {
 }
 
 func TestIsTokenBlacklisted_ShouldReturnError_WhenRepositoryFails(t *testing.T) {
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	mockAuthRepository.On("IsTokenBlacklisted", "token_error").Return(false, fmt.Errorf("repository error"))
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
@@ -160,10 +301,10 @@ func TestIsTokenBlacklisted_ShouldReturnError_WhenRepositoryFails(t *testing.T) 
 }
 
 func TestAddToBlacklist_ShouldCallRepository(t *testing.T) {
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	mockAuthRepository.On("AddToBlacklist", "new_token").Return(nil)
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)
@@ -175,10 +316,10 @@ func TestAddToBlacklist_ShouldCallRepository(t *testing.T) {
 }
 
 func TestAddToBlacklist_ShouldReturnError_WhenAddFails(t *testing.T) {
-	mockHistoryUseCase := new(test_helpers.MockHistoryUseCase)
+	mockHistoryUseCase := new(helper.MockHistoryUseCase)
 	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	mockAuthRepository := new(test_helpers.MockAuthRepository)
+	mockAuthRepository := new(helper.MockAuthRepository)
 	mockAuthRepository.On("AddToBlacklist", "token_error").Return(fmt.Errorf("repository error"))
 
 	authUseCase := impl.NewAuthUseCaseImpl(mockAuthRepository, nil, mockHistoryUseCase)

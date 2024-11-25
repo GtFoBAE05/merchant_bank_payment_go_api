@@ -14,7 +14,7 @@ type CustomerRepositoryImpl struct {
 	Filename string
 }
 
-func NewCustomerRepository(log *logrus.Logger, filename string) *CustomerRepositoryImpl {
+func NewCustomerRepositoryImpl(log *logrus.Logger, filename string) *CustomerRepositoryImpl {
 	return &CustomerRepositoryImpl{
 		Log:      log,
 		Filename: filename,

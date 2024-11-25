@@ -1,4 +1,4 @@
-package test_helpers
+package helper
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ const MerchantFilename = "test_merchant.json"
 const HistoryTempFilename = "test_history.json"
 const PaymentTransactionTempFilename = "test_payment_transaction.json"
 const BlacklistTempFilename = "test_blacklist_token.json"
+const FileUtilsFileName = "test_read_file.json"
 
 var CustomerId = uuid.New()
 var MerchantId = uuid.New()
@@ -38,21 +39,21 @@ var ExpectedHistories = []entity.History{
 	{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: CustomerId,
+		CustomerId: CustomerId.String(),
 		Timestamp:  CreatedAt,
 		Details:    "Login successful",
 	},
 	{
 		Id:         uuid.New(),
 		Action:     "PAYMENT",
-		CustomerId: CustomerId,
+		CustomerId: CustomerId.String(),
 		Timestamp:  CreatedAt.Add(1),
 		Details:    fmt.Sprintf("Payment of 20000 to Merchant Id %s", MerchantId),
 	},
 	{
 		Id:         uuid.New(),
 		Action:     "LOGOUT",
-		CustomerId: CustomerId,
+		CustomerId: CustomerId.String(),
 		Timestamp:  CreatedAt.Add(2),
 		Details:    "Logout successful",
 	},

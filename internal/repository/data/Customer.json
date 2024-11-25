@@ -3,7 +3,21 @@
     "id": "685729de-cd87-4524-80bc-9b19cf58df22",
     "username": "budi",
     "password": "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
-    "created_at": "2024-11-22 11:31:58.769884426",
-    "updated_at": "2024-11-22 11:31:58.769884426"
+    "created_at": "2024-11-22T11:31:58.769884426+07:00",
+    "updated_at": "2024-11-22T11:31:58.769884426+07:00"
+  },
+  {
+    "id": "685729de-cd87-4524-80bc-9b19cf58df44",
+    "username": "susi",
+    "password": "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
+    "created_at": "2024-11-22T11:31:58.769884426+07:00",
+    "updated_at": "2024-11-22T11:31:58.769884426+07:00"
+  },
+  {
+    "id": "685729de-cd87-4524-80bc-9b19cf58df66",
+    "username": "andi",
+    "password": "$2a$10$2y2ss1Xs8TWZKWFS2//gnuhX/Ruhvx07lIN6jcZX1JziMvC/uLOJe",
+    "created_at": "2024-11-22T11:31:58.769884426+07:00",
+    "updated_at": "2024-11-22T11:31:58.769884426+07:00"
   }
 ]

@@ -16,7 +16,7 @@ func ReadJsonFile(filename string, log *logrus.Logger) ([]byte, error) {
 	return fileContent, nil
 }
 
-func WriteJSONFile(filename string, data interface{}, log *logrus.Logger) error {
+func WriteJsonFile(filename string, data interface{}, log *logrus.Logger) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		log.Errorf("Error creating file %s: %v", filename, err)

@@ -41,7 +41,7 @@ func (r *AuthRepositoryImpl) LoadBlacklist() ([]string, error) {
 func (r *AuthRepositoryImpl) SaveBlacklist(blacklistedTokens []string) error {
 	r.Log.Infof("Saving %d blacklisted tokens to file: %s", len(blacklistedTokens), r.Filename)
 
-	if err := utils.WriteJSONFile(r.Filename, blacklistedTokens, r.Log); err != nil {
+	if err := utils.WriteJsonFile(r.Filename, blacklistedTokens, r.Log); err != nil {
 		r.Log.Errorf("Failed to save blacklist to file %s: %v", r.Filename, err)
 		return fmt.Errorf("error saving blacklist: %w", err)
 	}

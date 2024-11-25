@@ -42,7 +42,7 @@ func (p *PaymentTransactionImpl) LoadPayments() ([]entity.Payment, error) {
 func (p *PaymentTransactionImpl) SavePayments(transactions []entity.Payment) error {
 	p.Log.Infof("Saving %d payment transactions to file: %s", len(transactions), p.Filename)
 
-	if err := utils.WriteJSONFile(p.Filename, transactions, p.Log); err != nil {
+	if err := utils.WriteJsonFile(p.Filename, transactions, p.Log); err != nil {
 		p.Log.Errorf("Error saving payment transactions to file %s: %v", p.Filename, err)
 		return fmt.Errorf("failed to save payment transactions: %w", err)
 	}
