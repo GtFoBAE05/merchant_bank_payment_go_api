@@ -7,27 +7,27 @@ import (
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/entity"
 	"merchant_bank_payment_go_api/internal/repository/impl"
-	"merchant_bank_payment_go_api/test/test_helpers"
+	"merchant_bank_payment_go_api/test/helper"
 	"os"
 	"testing"
 	"time"
 )
 
 func CreatePaymentTransactionTempFile() {
-	fileContent, err := json.Marshal(test_helpers.ExpectedPayments)
+	fileContent, err := json.Marshal(helper.ExpectedPayments)
 	if err != nil {
 		logrus.Error("Error marshalling data:", err)
 		return
 	}
 
-	err = os.WriteFile(test_helpers.PaymentTransactionTempFilename, fileContent, 0644)
+	err = os.WriteFile(helper.PaymentTransactionTempFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
 func DeletePaymentTransactionTempFile() {
-	err := os.Remove(test_helpers.PaymentTransactionTempFilename)
+	err := os.Remove(helper.PaymentTransactionTempFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
@@ -38,12 +38,12 @@ func TestLoadPaymentTransaction_ShouldReturnPaymentTransactionToken(t *testing.T
 	CreatePaymentTransactionTempFile()
 
 	log := logrus.New()
-	repo := impl.NewPaymentTransactionImpl(log, test_helpers.PaymentTransactionTempFilename)
+	repo := impl.NewPaymentTransactionImpl(log, helper.PaymentTransactionTempFilename)
 
 	paymentTransactionResult, err := repo.LoadPayments()
 
 	assert.Nil(t, err)
-	assert.Equal(t, len(test_helpers.ExpectedPayments), len(paymentTransactionResult))
+	assert.Equal(t, len(helper.ExpectedPayments), len(paymentTransactionResult))
 }
 
 func TestLoadPaymentTransaction_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
@@ -59,21 +59,21 @@ func TestLoadPaymentTransaction_ShouldReturnError_WhenInvalidFilename(t *testing
 }
 
 func TestLoadPayment_ShouldReturnError_WhenInvalidContent(t *testing.T) {
-	err := os.WriteFile(test_helpers.PaymentTransactionTempFilename, []byte(""), 0644)
+	err := os.WriteFile(helper.PaymentTransactionTempFilename, []byte(""), 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 		return
 	}
 
 	log := logrus.New()
-	repo := impl.NewPaymentTransactionImpl(log, test_helpers.PaymentTransactionTempFilename)
+	repo := impl.NewPaymentTransactionImpl(log, helper.PaymentTransactionTempFilename)
 
 	paymentResult, err := repo.LoadPayments()
 
 	assert.Nil(t, paymentResult)
 	assert.NotNil(t, err)
 
-	err = os.Remove(test_helpers.PaymentTransactionTempFilename)
+	err = os.Remove(helper.PaymentTransactionTempFilename)
 	if err != nil {
 		logrus.Error("Error deleting to file:", err)
 	}
@@ -85,20 +85,20 @@ func TestSavePaymentTransaction_ShouldReturnSuccess(t *testing.T) {
 
 	newPayments := entity.Payment{
 		Id:         uuid.New(),
-		CustomerId: test_helpers.CustomerId,
-		MerchantId: test_helpers.MerchantId,
+		CustomerId: helper.CustomerId,
+		MerchantId: helper.MerchantId,
 		Amount:     10000,
-		Timestamp:  test_helpers.CreatedAt,
+		Timestamp:  helper.CreatedAt,
 	}
-	addedPayments := test_helpers.ExpectedPayments
+	addedPayments := helper.ExpectedPayments
 	addedPayments = append(addedPayments, newPayments)
 
 	log := logrus.New()
-	repo := impl.NewPaymentTransactionImpl(log, test_helpers.PaymentTransactionTempFilename)
+	repo := impl.NewPaymentTransactionImpl(log, helper.PaymentTransactionTempFilename)
 
 	err := repo.SavePayments(addedPayments)
 
-	fileContent, err := os.ReadFile(test_helpers.PaymentTransactionTempFilename)
+	fileContent, err := os.ReadFile(helper.PaymentTransactionTempFilename)
 	assert.Nil(t, err)
 
 	var paymentTransactionsResult []entity.Payment
@@ -113,7 +113,7 @@ func TestSavePaymentTransaction_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewPaymentTransactionImpl(log, invalidFilename)
 
-	err := repo.SavePayments(test_helpers.ExpectedPayments)
+	err := repo.SavePayments(helper.ExpectedPayments)
 
 	assert.NotNil(t, err)
 }
@@ -124,21 +124,21 @@ func TestAddToPaymentTransaction_ShouldAddNewPayment(t *testing.T) {
 
 	newPayments := entity.Payment{
 		Id:         uuid.New(),
-		CustomerId: test_helpers.CustomerId,
-		MerchantId: test_helpers.MerchantId,
+		CustomerId: helper.CustomerId,
+		MerchantId: helper.MerchantId,
 		Amount:     10000,
-		Timestamp:  test_helpers.CreatedAt,
+		Timestamp:  helper.CreatedAt,
 	}
-	addedPayments := test_helpers.ExpectedPayments
+	addedPayments := helper.ExpectedPayments
 	addedPayments = append(addedPayments, newPayments)
 
 	log := logrus.New()
-	repo := impl.NewPaymentTransactionImpl(log, test_helpers.PaymentTransactionTempFilename)
+	repo := impl.NewPaymentTransactionImpl(log, helper.PaymentTransactionTempFilename)
 
 	err := repo.AddPayment(newPayments)
 	assert.Nil(t, err)
 
-	fileContent, err := os.ReadFile(test_helpers.PaymentTransactionTempFilename)
+	fileContent, err := os.ReadFile(helper.PaymentTransactionTempFilename)
 	assert.Nil(t, err)
 
 	var paymentTransactionResult []entity.Payment
@@ -153,8 +153,8 @@ func TestAddToPaymentTransaction_ShouldReturnError_WhenLoadFails(t *testing.T) {
 
 	newPayments := entity.Payment{
 		Id:         uuid.New(),
-		CustomerId: test_helpers.CustomerId,
-		MerchantId: test_helpers.MerchantId,
+		CustomerId: helper.CustomerId,
+		MerchantId: helper.MerchantId,
 		Amount:     10000,
 		Timestamp:  time.Now(),
 	}
