@@ -9,13 +9,8 @@ func NewLogger() *logrus.Logger {
 	log := logrus.New()
 
 	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.JSONFormatter{})
 
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
-		ForceColors:   true,
-		DisableColors: false,
-	})
+	log.SetFormatter(&logrus.JSONFormatter{})
 
 	logFile, err := os.OpenFile("app_history.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
