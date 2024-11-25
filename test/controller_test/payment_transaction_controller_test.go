@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/delivery/http/controller"
 	"merchant_bank_payment_go_api/internal/delivery/http/middleware"
-	"merchant_bank_payment_go_api/internal/jwt"
 	"merchant_bank_payment_go_api/internal/model"
+	"merchant_bank_payment_go_api/internal/utils"
 	"merchant_bank_payment_go_api/test/helper"
 	"net/http"
 	"net/http/httptest"
@@ -19,8 +19,10 @@ import (
 )
 
 func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
+	utils.InitJwtConfig([]byte("abc"), 10)
+
 	customerId := uuid.New()
-	token, _ := jwtutils.GenerateAccessToken(customerId.String())
+	token, _ := utils.GenerateAccessToken(customerId.String())
 	merchantId := uuid.New()
 	paymentRequest := model.PaymentRequest{
 		MerchantId: merchantId.String(),
@@ -69,7 +71,7 @@ func TestAddPayment_ShouldReturnSuccess(t *testing.T) {
 }
 
 func TestAddPayment_ShouldReturnError_WhenInvalidRequest(t *testing.T) {
-	token, _ := jwtutils.GenerateAccessToken(uuid.New().String())
+	token, _ := utils.GenerateAccessToken(uuid.New().String())
 	paymentRequest := model.PaymentRequest{
 		Amount: 10000,
 	}
@@ -110,7 +112,7 @@ func TestAddPayment_ShouldReturnError_WhenInvalidRequest(t *testing.T) {
 
 func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 	customerId := uuid.New()
-	token, _ := jwtutils.GenerateAccessToken(customerId.String())
+	token, _ := utils.GenerateAccessToken(customerId.String())
 	merchantId := uuid.New()
 	paymentRequest := model.PaymentRequest{
 		MerchantId: merchantId.String(),
@@ -159,7 +161,7 @@ func TestAddPayment_ShouldReturnError_WhenNotUserIdOnContext(t *testing.T) {
 
 func TestAddPayment_ShouldReturnError_WhenInvalidMerchantId(t *testing.T) {
 	customerId := uuid.New()
-	token, _ := jwtutils.GenerateAccessToken(customerId.String())
+	token, _ := utils.GenerateAccessToken(customerId.String())
 	merchantId := uuid.New()
 	paymentRequest := model.PaymentRequest{
 		MerchantId: merchantId.String(),
