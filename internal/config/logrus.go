@@ -10,7 +10,6 @@ func NewLogger() *logrus.Logger {
 
 	log.SetLevel(logrus.InfoLevel)
 
-	// Set the JSONFormatter for structured logging (machine-readable)
 	log.SetFormatter(&logrus.JSONFormatter{})
 
 	logFile, err := os.OpenFile("app_history.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
