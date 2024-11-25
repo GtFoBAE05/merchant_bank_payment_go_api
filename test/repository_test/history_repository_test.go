@@ -91,7 +91,7 @@ func TestSaveHistories_ShouldReturnSuccess(t *testing.T) {
 	newExpectedHistories = append(newExpectedHistories, entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: uuid.New(),
+		CustomerId: uuid.New().String(),
 		Timestamp:  helper.CreatedAt,
 		Details:    "Login successful",
 	})
@@ -124,7 +124,7 @@ func TestAddToHistory_ShouldAddNewHistory(t *testing.T) {
 	newHistory := entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: uuid.New(),
+		CustomerId: uuid.New().String(),
 		Timestamp:  helper.CreatedAt,
 		Details:    "Login successful",
 	}
@@ -153,7 +153,7 @@ func TestAddToHistory_ShouldReturnErrorWhenLoadFails(t *testing.T) {
 	newHistory := entity.History{
 		Id:         uuid.New(),
 		Action:     "LOGIN",
-		CustomerId: uuid.New(),
+		CustomerId: uuid.New().String(),
 		Timestamp:  time.Now(),
 		Details:    "Login successful",
 	}

@@ -23,16 +23,10 @@ func NewHistoryUseCaseImpl(log *logrus.Logger, historyRepository repository.Hist
 func (h *HistoryUseCaseImpl) AddHistory(customerId, action, details string) error {
 	h.Log.Infof("Attempting to add %s history to the histories", customerId)
 
-	parsedCustomerUUID, err := uuid.Parse(customerId)
-	if err != nil {
-		h.Log.Errorf("Failed to parse customer uuid: %s", customerId)
-		return err
-	}
-
 	newHistory := entity.History{
 		Id:         uuid.New(),
 		Action:     action,
-		CustomerId: parsedCustomerUUID,
+		CustomerId: customerId,
 		Timestamp:  time.Now(),
 		Details:    details,
 	}

@@ -45,7 +45,7 @@ func (h *HistoryRepositoryImpl) LoadHistories() ([]entity.History, error) {
 func (h *HistoryRepositoryImpl) SaveHistories(histories []entity.History) error {
 	h.Log.Infof("Saving %d histories to file: %s", len(histories), h.Filename)
 
-	err := utils.WriteJSONFile(h.Filename, histories, h.Log)
+	err := utils.WriteJsonFile(h.Filename, histories, h.Log)
 	if err != nil {
 		h.Log.Errorf("Error saving histories to file %s: %v", h.Filename, err)
 		return fmt.Errorf("error saving histories to file %s: %v", h.Filename, err)
