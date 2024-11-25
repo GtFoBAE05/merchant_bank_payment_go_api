@@ -60,7 +60,7 @@ func TestFindById_ShouldReturnError_WhenMerchantNotFound(t *testing.T) {
 func TestFindMerchantById_ShouldReturnError_WhenLogOnErrorParseToken(t *testing.T) {
 	mockMerchantRepository := new(helper.MockMerchantRepository)
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
-	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("error On Log"))
 	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
 	_, err := useCase.FindById("12345")
@@ -70,7 +70,7 @@ func TestFindMerchantById_ShouldReturnError_WhenLogOnErrorParseToken(t *testing.
 func TestFindById_ShouldReturnError_WhenLogOnReturnMerchantNotFound(t *testing.T) {
 	mockMerchantRepository := new(helper.MockMerchantRepository)
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
-	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("error On Log"))
 	mockMerchantRepository.On("FindById", helper.MerchantId).Return(entity.Merchant{}, errors.New("customer not found"))
 	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
@@ -82,7 +82,7 @@ func TestFindById_ShouldReturnError_WhenLogOnReturnMerchantNotFound(t *testing.T
 func TestFindById_ShouldReturnError_WhenLogOnReturnMerchantError(t *testing.T) {
 	mockMerchantRepository := new(helper.MockMerchantRepository)
 	mockHistoryUseCase := new(helper.MockHistoryUseCase)
-	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Error On Log"))
+	mockHistoryUseCase.On("LogAndAddHistory", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("error On Log"))
 	mockMerchantRepository.On("FindById", helper.MerchantId).Return(helper.ExpectedMerchants[0], nil)
 	useCase := impl.NewMerchantUseCaseImpl(mockHistoryUseCase, mockMerchantRepository)
 
