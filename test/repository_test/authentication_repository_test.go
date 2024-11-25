@@ -5,26 +5,26 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"merchant_bank_payment_go_api/internal/repository/impl"
-	"merchant_bank_payment_go_api/test/test_helpers"
+	"merchant_bank_payment_go_api/test/helper"
 	"os"
 	"testing"
 )
 
 func CreateBlacklistTempFile() {
-	fileContent, err := json.Marshal(test_helpers.ExpectedTokens)
+	fileContent, err := json.Marshal(helper.ExpectedTokens)
 	if err != nil {
 		logrus.Error("Error marshalling data:", err)
 		return
 	}
 
-	err = os.WriteFile(test_helpers.BlacklistTempFilename, fileContent, 0644)
+	err = os.WriteFile(helper.BlacklistTempFilename, fileContent, 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 	}
 }
 
 func DeleteBlacklistTempFile() {
-	err := os.Remove(test_helpers.BlacklistTempFilename)
+	err := os.Remove(helper.BlacklistTempFilename)
 	if err != nil && !os.IsNotExist(err) {
 		logrus.Error("Error removing file:", err)
 	}
@@ -35,12 +35,12 @@ func TestLoadBlackList_ShouldReturnBlackListToken(t *testing.T) {
 	CreateBlacklistTempFile()
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	loadedToken, err := repo.LoadBlacklist()
 
 	assert.Nil(t, err)
-	assert.Equal(t, len(test_helpers.ExpectedTokens), len(loadedToken))
+	assert.Equal(t, len(helper.ExpectedTokens), len(loadedToken))
 }
 
 func TestLoadBlacklist_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
@@ -56,21 +56,21 @@ func TestLoadBlacklist_ShouldReturnError_WhenInvalidFilename(t *testing.T) {
 }
 
 func TestLoadBlacklist_ShouldReturnError_WhenInvalidContent(t *testing.T) {
-	err := os.WriteFile(test_helpers.BlacklistTempFilename, []byte(""), 0644)
+	err := os.WriteFile(helper.BlacklistTempFilename, []byte(""), 0644)
 	if err != nil {
 		logrus.Error("Error writing to file:", err)
 		return
 	}
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	blacklistResult, err := repo.LoadBlacklist()
 
 	assert.Nil(t, blacklistResult)
 	assert.NotNil(t, err)
 
-	err = os.Remove(test_helpers.BlacklistTempFilename)
+	err = os.Remove(helper.BlacklistTempFilename)
 	if err != nil {
 		logrus.Error("Error deleting to file:", err)
 	}
@@ -81,14 +81,14 @@ func TestSaveBlacklist_ShouldReturnSuccess(t *testing.T) {
 	t.Cleanup(DeleteBlacklistTempFile)
 	CreateBlacklistTempFile()
 
-	newExpectedTokens := append(test_helpers.ExpectedTokens, "token4")
+	newExpectedTokens := append(helper.ExpectedTokens, "token4")
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	err := repo.SaveBlacklist(newExpectedTokens)
 
-	fileContent, err := os.ReadFile(test_helpers.BlacklistTempFilename)
+	fileContent, err := os.ReadFile(helper.BlacklistTempFilename)
 	assert.Nil(t, err)
 
 	var tokenResults []string
@@ -103,7 +103,7 @@ func TestSaveBlacklist_ShouldReturnError(t *testing.T) {
 	log := logrus.New()
 	repo := impl.NewAuthRepository(log, invalidFilename)
 
-	err := repo.SaveBlacklist(test_helpers.ExpectedTokens)
+	err := repo.SaveBlacklist(helper.ExpectedTokens)
 
 	assert.NotNil(t, err)
 }
@@ -116,12 +116,12 @@ func TestAddToBlacklist_ShouldAddNewToken(t *testing.T) {
 	expectedBlacklistToken := []string{"token1", "token2", "token3", "token4"}
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	err := repo.AddToBlacklist(token)
 	assert.Nil(t, err)
 
-	fileContent, err := os.ReadFile(test_helpers.BlacklistTempFilename)
+	fileContent, err := os.ReadFile(helper.BlacklistTempFilename)
 	assert.Nil(t, err)
 
 	var tokenResults []string
@@ -138,7 +138,7 @@ func TestAddToBlacklist_ShouldReturnErrorWhenAlreadyBlacklisted(t *testing.T) {
 	token := "token1"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	err := repo.AddToBlacklist(token)
 	assert.NotNil(t, err)
@@ -162,7 +162,7 @@ func TestIsTokenBlacklist_ShouldReturnTrue(t *testing.T) {
 	token := "token1"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	blacklisted, err := repo.IsTokenBlacklisted(token)
 	assert.True(t, blacklisted)
@@ -176,7 +176,7 @@ func TestIsTokenBlacklist_ShouldReturnFalse(t *testing.T) {
 	token := "token4"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	blacklisted, err := repo.IsTokenBlacklisted(token)
 	assert.False(t, blacklisted)
@@ -187,7 +187,7 @@ func TestIsTokenBlacklist_ShouldReturnError_WhenLoadError(t *testing.T) {
 	token := "token4"
 
 	log := logrus.New()
-	repo := impl.NewAuthRepository(log, test_helpers.BlacklistTempFilename)
+	repo := impl.NewAuthRepository(log, helper.BlacklistTempFilename)
 
 	_, err := repo.IsTokenBlacklisted(token)
 	assert.NotNil(t, err)
